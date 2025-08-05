@@ -301,6 +301,231 @@
             });
         }
 
+        // Login form handler
+        const loginForm = document.getElementById('login-form');
+        if (loginForm) {
+            loginForm.onsubmit = function(e) {
+                e.preventDefault();
+                
+                const submitButton = loginForm.querySelector('.submit-btn');
+                const btnText = submitButton.querySelector('.btn-text');
+                const btnLoader = submitButton.querySelector('.btn-loader');
+                
+                // Get form data
+                const formData = new FormData(loginForm);
+                const username = formData.get('username');
+                const password = formData.get('password');
+                
+                // Debug: Log form data (remove in production)
+                console.log('Login attempt:', { username, password: password ? '***' : 'empty' });
+                
+                // Basic validation
+                if (!username || !password) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Missing Information',
+                        text: 'Please fill in both username and password!',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                    return;
+                }
+                
+                // Show loading state
+                submitButton.disabled = true;
+                btnText.style.display = 'none';
+                btnLoader.style.display = 'block';
+                
+                // Prepare request data
+                const requestBody = new URLSearchParams();
+                requestBody.append('username', username);
+                requestBody.append('password', password);
+                if (formData.get('remember')) {
+                    requestBody.append('remember', 'on');
+                }
+                
+                // Debug: Log request body
+                console.log('Request body:', requestBody.toString());
+                
+                fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+                    },
+                    body: requestBody
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    console.log('Response headers:', response.headers);
+                    return response.text();
+                })
+                .then(html => {
+                    console.log('Response HTML length:', html.length);
+                    console.log('Response contains:', {
+                        loginSuccess: html.includes('data-login-success'),
+                        validationError: html.includes('data-validation-error'),
+                        loginError: html.includes('Invalid username or password') || html.includes('login-error')
+                    });
+                    
+                    // Reset button state
+                    submitButton.disabled = false;
+                    btnText.style.display = 'block';
+                    btnLoader.style.display = 'none';
+                    
+                    // Handle different response types
+                    if (html.includes('data-login-success') || html.includes('dashboard') || html.includes('Welcome')) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Welcome back! 🎉',
+                            text: 'Login successful! Redirecting to dashboard...',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            background: 'rgba(255, 255, 255, 0.95)',
+                            backdrop: 'rgba(0, 0, 0, 0.8)'
+                        });
+                        setTimeout(() => window.location.href = '/dashboard', 2000);
+                    } else if (html.includes('data-validation-error')) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Missing Information',
+                            text: 'Please fill in all required fields!',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    } else if (html.includes('Invalid username or password') || html.includes('login failed') || html.includes('authentication failed')) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Login Failed',
+                            text: 'Invalid username or password. Please try again.',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    } else {
+                        // If no specific markers found, check if we're redirected to login page
+                        if (html.includes('Welcome Back') || html.includes('Sign in to your account')) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Login Failed',
+                                text: 'Invalid credentials. Please check your username and password.',
+                                showConfirmButton: false,
+                                timer: 3000
+                            });
+                        } else {
+                            // Unknown response - show generic error but log details
+                            console.error('Unexpected response:', html.substring(0, 500));
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Unexpected Response',
+                                text: 'Something unexpected happened. Please try again.',
+                                showConfirmButton: false,
+                                timer: 3000
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Login error:', error);
+                    
+                    // Reset button state
+                    submitButton.disabled = false;
+                    btnText.style.display = 'block';
+                    btnLoader.style.display = 'none';
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Connection Error',
+                        text: 'Unable to connect to server. Please try again.',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                });
+            };
+        }
+
+        // Register form handler
+        const registerForm = document.getElementById('register-form');
+        if (registerForm) {
+            registerForm.onsubmit = function(e) {
+                e.preventDefault();
+                const submitButton = registerForm.querySelector('.submit-btn');
+                const btnText = submitButton.querySelector('.btn-text');
+                const btnLoader = submitButton.querySelector('.btn-loader');
+                
+                submitButton.disabled = true;
+                btnText.style.display = 'none';
+                btnLoader.style.display = 'block';
+                
+                fetch('/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: new URLSearchParams(new FormData(registerForm))
+                }).then(res => res.text()).then(html => {
+                    submitButton.disabled = false;
+                    btnText.style.display = 'block';
+                    btnLoader.style.display = 'none';
+                    
+                    if (html.includes('data-otp-sent')) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Check Your Email! 📧',
+                            text: 'We\'ve sent a verification code to your email address.',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                        setTimeout(() => window.location.href = '/verify-otp', 3000);
+                    } else if (html.includes('data-register-exists')) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Username Taken',
+                            text: 'This username is already registered. Please choose another one.',
+                            timer: 3000
+                        });
+                    } else if (html.includes('data-email-exists')) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Email Already Registered',
+                            text: 'This email is already associated with an account.',
+                            timer: 3000
+                        });
+                    } else if (html.includes('data-otp-failed')) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Email Service Error',
+                            text: 'Failed to send verification code. Please check your email and try again.',
+                            timer: 4000
+                        });
+                    } else if (html.includes('data-validation-error')) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Form Validation Error',
+                            text: 'Please fill in all fields correctly!',
+                            timer: 3000
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Registration Failed',
+                            text: 'An unexpected error occurred. Please try again.',
+                            timer: 3000
+                        });
+                    }
+                }).catch(error => {
+                    submitButton.disabled = false;
+                    btnText.style.display = 'block';
+                    btnLoader.style.display = 'none';
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Connection Error',
+                        text: 'Unable to connect to server. Please try again.',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                });
+            };
+        }
+
         // Add floating animation to background shapes
         const shapes = document.querySelectorAll('.floating-shape');
         shapes.forEach((shape, index) => {
