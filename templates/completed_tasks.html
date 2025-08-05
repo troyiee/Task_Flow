@@ -1603,7 +1603,180 @@
         padding: 0.4rem 0.8rem;
     }
 }
+/* Task Export Checkbox Styles */
+.task-export-checkbox {
+    position: relative;
+    margin-right: 0.5rem;
+}
 
+.task-export-checkbox input[type="checkbox"] {
+    opacity: 0;
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    z-index: 2;
+    margin: 0;
+}
+
+.export-checkbox-custom {
+    width: 32px;
+    height: 32px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    font-size: 14px;
+    color: transparent;
+}
+
+.export-checkbox-custom:hover {
+    border-color: rgba(79, 172, 254, 0.6);
+    background: rgba(79, 172, 254, 0.15);
+    transform: scale(1.05);
+}
+
+.task-export-checkbox input[type="checkbox"]:checked + .export-checkbox-custom {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 4px 12px rgba(67, 233, 123, 0.4);
+}
+
+.task-export-checkbox input[type="checkbox"]:checked + .export-checkbox-custom::after {
+    content: '📤';
+    position: absolute;
+    font-size: 16px;
+    animation: exportPop 0.3s ease-out;
+}
+
+@keyframes exportPop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.task-export-checkbox input[type="checkbox"]:focus + .export-checkbox-custom {
+    outline: 2px solid rgba(79, 172, 254, 0.5);
+    outline-offset: 2px;
+}
+/* Light mode export checkbox */
+body.light-mode .export-checkbox-custom,
+body[data-theme="light"] .export-checkbox-custom {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 2px solid rgba(0, 0, 0, 0.2) !important;
+}
+
+body.light-mode .export-checkbox-custom:hover,
+body[data-theme="light"] .export-checkbox-custom:hover {
+    border-color: rgba(79, 172, 254, 0.6) !important;
+    background: rgba(79, 172, 254, 0.1) !important;
+}
+/* Updated task header layout */
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.task-priority-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.completion-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Task Export Checkbox */
+.task-export-checkbox {
+    position: relative;
+    margin: 0;
+}
+
+.task-export-checkbox input[type="checkbox"] {
+    opacity: 0;
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    z-index: 2;
+    margin: 0;
+}
+
+.export-checkbox-custom {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    font-size: 12px;
+    color: transparent;
+}
+
+.export-checkbox-custom:hover {
+    border-color: rgba(67, 233, 123, 0.8);
+    background: rgba(67, 233, 123, 0.15);
+    transform: scale(1.05);
+}
+
+.task-export-checkbox input[type="checkbox"]:checked + .export-checkbox-custom {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 4px 12px rgba(67, 233, 123, 0.4);
+}
+
+.task-export-checkbox input[type="checkbox"]:checked + .export-checkbox-custom::after {
+    content: '📤';
+    position: absolute;
+    font-size: 12px;
+    animation: exportPop 0.3s ease-out;
+}
+
+@keyframes exportPop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.task-export-checkbox input[type="checkbox"]:focus + .export-checkbox-custom {
+    outline: 2px solid rgba(67, 233, 123, 0.5);
+    outline-offset: 2px;
+}
 
 </style>
 </head>
@@ -1755,6 +1928,7 @@
         let completedTasks = [];
         let currentSort = 'priority';
         let selectedTasks = new Set();
+        
 
         // Initialize page
         window.addEventListener('DOMContentLoaded', function() {
@@ -1931,17 +2105,21 @@
             }
             
             div.innerHTML = `
-                <input type="checkbox" class="task-selection-checkbox" 
-                       onchange="toggleTaskSelection(${task.id})" 
-                       id="select-task-${task.id}">
                 <div class="task-header">
                     <div class="task-priority-container">
                         <div class="task-priority ${priorityClass}"></div>
                         <span class="priority-label priority-${task.priority}">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority</span>
                     </div>
-                    <div class="completion-badge">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Completed</span>
+                    <div class="completion-section">
+                        <div class="task-export-checkbox">
+                            <input type="checkbox" onchange="toggleTaskSelection(${task.id})" 
+                                id="export-task-${task.id}" title="Select for export">
+                            <label for="export-task-${task.id}" class="export-checkbox-custom"></label>
+                        </div>
+                        <div class="completion-badge">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Completed</span>
+                        </div>
                     </div>
                 </div>
                 <div class="task-content">
@@ -1997,6 +2175,13 @@
                             <h4 style="color: #667eea; margin-bottom: 0.5rem;">Task Information</h4>
                             <p><strong>Title:</strong> ${task.title}</p>
                             <p><strong>Priority:</strong> <span class="priority-${task.priority}" style="text-transform: capitalize;">${task.priority}</span></p>
+                            <div class="task-actions">
+                                <div class="task-export-checkbox">
+                                    <input type="checkbox" onchange="toggleTaskSelection(${task.id})" 
+                                        id="export-task-${task.id}" title="Select for export">
+                                    <label for="export-task-${task.id}" class="export-checkbox-custom"></label>
+                                </div>
+                            </div>
                             <p><strong>Due Date:</strong> ${task.due_date ? formatDate(task.due_date) : 'No due date'}</p>
                             <p><strong>Status:</strong> <span style="color: #10b981;">✓ Completed</span></p>
                             ${task.description ? `<p><strong>Description:</strong> ${task.description}</p>` : ''}
@@ -2378,7 +2563,8 @@
 
         function clearTaskSelection() {
             selectedTasks.clear();
-            document.querySelectorAll('.task-selection-checkbox').forEach(checkbox => {
+            // Update the selector to match the new checkbox IDs
+            document.querySelectorAll('input[id^="export-task-"]').forEach(checkbox => {
                 checkbox.checked = false;
             });
             updateBulkActionsVisibility();
@@ -2451,6 +2637,144 @@
             });
             updateBulkActionsVisibility();
         }
+
+        // Task Selection and Export Functions
+function toggleTaskSelection(taskId) {
+    if (selectedTasks.has(taskId)) {
+        selectedTasks.delete(taskId);
+    } else {
+        selectedTasks.add(taskId);
+    }
+    updateBulkActionsVisibility();
+}
+
+function updateBulkActionsVisibility() {
+    if (selectedTasks.size > 0) {
+        // Show export button as floating action button
+        showFloatingExportButton();
+    } else {
+        hideFloatingExportButton();
+    }
+}
+
+function showFloatingExportButton() {
+    let floatingBtn = document.getElementById('floating-export-btn');
+    if (!floatingBtn) {
+        floatingBtn = document.createElement('div');
+        floatingBtn.id = 'floating-export-btn';
+        floatingBtn.innerHTML = `
+            <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); 
+                        color: white; padding: 1rem 1.5rem; border-radius: 50px; 
+                        box-shadow: 0 8px 25px rgba(67, 233, 123, 0.4); 
+                        cursor: pointer; transition: all 0.3s ease;
+                        position: fixed; bottom: 2rem; right: 17rem; z-index: 1000;
+                        display: flex; align-items: center; gap: 0.5rem;
+                        backdrop-filter: blur(10px);"
+                    onclick="exportSelectedTasks()"
+                    onmouseover="this.style.transform='translateY(-2px) scale(1.05)'"
+                    onmouseout="this.style.transform='translateY(0) scale(1)'">
+                <i class="fas fa-download"></i>
+                <span>Export ${selectedTasks.size} task${selectedTasks.size === 1 ? '' : 's'}</span>
+                <button onclick="event.stopPropagation(); clearTaskSelection()" 
+                        style="background: rgba(255,255,255,0.2); border: none; 
+                            border-radius: 50%; width: 24px; height: 24px; 
+                            color: white; cursor: pointer; margin-left: 0.5rem;
+                            display: flex; align-items: center; justify-content: center;">
+                    ×
+                </button>
+            </div>
+        `;
+        document.body.appendChild(floatingBtn);
+    } else {
+        floatingBtn.querySelector('span').textContent = `Export ${selectedTasks.size} task${selectedTasks.size === 1 ? '' : 's'}`;
+        floatingBtn.style.display = 'block';
+    }
+}
+
+function hideFloatingExportButton() {
+    const floatingBtn = document.getElementById('floating-export-btn');
+    if (floatingBtn) {
+        floatingBtn.style.display = 'none';
+    }
+}
+
+function clearTaskSelection() {
+    selectedTasks.clear();
+    document.querySelectorAll('.task-export-checkbox input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    updateBulkActionsVisibility();
+}
+
+async function exportSelectedTasks() {
+    if (selectedTasks.size === 0) {
+        showError('Please select tasks to export');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/export-tasks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                task_ids: Array.from(selectedTasks)
+            })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            // Create and download the text file
+            const blob = new Blob([result.report], { 
+                type: 'text/plain;charset=utf-8' 
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = result.filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showSuccess(`Successfully exported ${selectedTasks.size} task${selectedTasks.size === 1 ? '' : 's'}!`);
+            clearTaskSelection();
+        } else {
+            showError('Export failed: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Export failed:', error);
+        showError('Export failed: ' + error.message);
+    }
+}
+
+// Keyboard shortcuts for task selection
+function selectAllVisibleTasks() {
+    const visibleCheckboxes = document.querySelectorAll('.task-export-checkbox input[type="checkbox"]');
+    visibleCheckboxes.forEach(checkbox => {
+        const taskId = parseInt(checkbox.id.replace('export-task-', ''));
+        selectedTasks.add(taskId);
+        checkbox.checked = true;
+    });
+    updateBulkActionsVisibility();
+}
+// Keyboard shortcuts for task selection
+document.addEventListener('keydown', function(e) {
+    // Ctrl/Cmd + A to select all visible tasks
+    if ((e.ctrlKey || e.metaKey) && e.key === 'a' && !e.target.matches('input, textarea, select')) {
+        e.preventDefault();
+        selectAllVisibleTasks();
+    }
+    
+    // Escape to clear selection
+    if (e.key === 'Escape') {
+        clearTaskSelection();
+    }
+});
+
+
 </script>
 </body>
 </html>
