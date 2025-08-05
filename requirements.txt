@@ -6,3 +6,7 @@ MarkupSafe==2.1.5
 click==8.1.7
 blinker==1.8.2
 itsdangerous==2.2.0
+gunicorn==21.2.0
+python-dotenv==1.0.0
+sib_api_v3_sdk==7.6.0
+requests==2.31.0
