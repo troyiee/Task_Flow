@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - TaskFlow</title>
-    <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="/static/sweetalert2@11.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.3/sweetalert2.min.js"></script>
 </head>
 <body class="auth-bg">
     <!-- Animated Background Elements -->
@@ -261,7 +260,8 @@
         const strengthText = document.querySelector('.strength-text');
         
         switch(strength) {
-            case 0-1:
+            case 0:
+            case 1:
                 strengthBar.style.width = '20%';
                 strengthBar.style.background = '#ef4444';
                 feedback = 'Very weak';
@@ -301,155 +301,6 @@
             });
         }
 
-        // Login form handler
-        const loginForm = document.getElementById('login-form');
-        if (loginForm) {
-            loginForm.onsubmit = function(e) {
-                e.preventDefault();
-                const submitButton = loginForm.querySelector('.submit-btn');
-                const btnText = submitButton.querySelector('.btn-text');
-                const btnLoader = submitButton.querySelector('.btn-loader');
-                
-                submitButton.disabled = true;
-                btnText.style.display = 'none';
-                btnLoader.style.display = 'block';
-                
-                fetch('/login', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: new URLSearchParams(new FormData(loginForm))
-                }).then(res => res.text()).then(html => {
-                    submitButton.disabled = false;
-                    btnText.style.display = 'block';
-                    btnLoader.style.display = 'none';
-                    
-                    if (html.includes('data-login-success')) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Welcome back! 🎉',
-                            text: 'Login successful! Redirecting to dashboard...',
-                            showConfirmButton: false,
-                            timer: 2000,
-                            background: 'rgba(255, 255, 255, 0.95)',
-                            backdrop: 'rgba(0, 0, 0, 0.8)'
-                        });
-                        setTimeout(() => window.location.href = '/dashboard', 2000);
-                    } else if (html.includes('data-validation-error')) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Missing Information',
-                            text: 'Please fill in all required fields!',
-                            showConfirmButton: false,
-                            timer: 3000
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Login Failed',
-                            text: 'Invalid username or password. Please try again.',
-                            showConfirmButton: false,
-                            timer: 3000
-                        });
-                    }
-                }).catch(error => {
-                    submitButton.disabled = false;
-                    btnText.style.display = 'block';
-                    btnLoader.style.display = 'none';
-                    
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Connection Error',
-                        text: 'Unable to connect to server. Please try again.',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                });
-            };
-        }
-
-        // Register form handler
-        const registerForm = document.getElementById('register-form');
-        if (registerForm) {
-            registerForm.onsubmit = function(e) {
-                e.preventDefault();
-                const submitButton = registerForm.querySelector('.submit-btn');
-                const btnText = submitButton.querySelector('.btn-text');
-                const btnLoader = submitButton.querySelector('.btn-loader');
-                
-                submitButton.disabled = true;
-                btnText.style.display = 'none';
-                btnLoader.style.display = 'block';
-                
-                fetch('/register', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: new URLSearchParams(new FormData(registerForm))
-                }).then(res => res.text()).then(html => {
-                    submitButton.disabled = false;
-                    btnText.style.display = 'block';
-                    btnLoader.style.display = 'none';
-                    
-                    if (html.includes('data-otp-sent')) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Check Your Email! 📧',
-                            text: 'We\'ve sent a verification code to your email address.',
-                            showConfirmButton: false,
-                            timer: 3000
-                        });
-                        setTimeout(() => window.location.href = '/verify-otp', 3000);
-                    } else if (html.includes('data-register-exists')) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Username Taken',
-                            text: 'This username is already registered. Please choose another one.',
-                            timer: 3000
-                        });
-                    } else if (html.includes('data-email-exists')) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Email Already Registered',
-                            text: 'This email is already associated with an account.',
-                            timer: 3000
-                        });
-                    } else if (html.includes('data-otp-failed')) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Email Service Error',
-                            text: 'Failed to send verification code. Please check your email and try again.',
-                            timer: 4000
-                        });
-                    } else if (html.includes('data-validation-error')) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Form Validation Error',
-                            text: 'Please fill in all fields correctly!',
-                            timer: 3000
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Registration Failed',
-                            text: 'An unexpected error occurred. Please try again.',
-                            timer: 3000
-                        });
-                    }
-                }).catch(error => {
-                    submitButton.disabled = false;
-                    btnText.style.display = 'block';
-                    btnLoader.style.display = 'none';
-                    
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Connection Error',
-                        text: 'Unable to connect to server. Please try again.',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                });
-            };
-        }
-
         // Add floating animation to background shapes
         const shapes = document.querySelectorAll('.floating-shape');
         shapes.forEach((shape, index) => {
@@ -459,6 +310,40 @@
     </script>
 
     <style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --glass-bg: rgba(255, 255, 255, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.2);
+        --border-radius: 8px;
+        --border-radius-sm: 6px;
+        --border-radius-lg: 16px;
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+        --text-primary: #1f2937;
+        --text-secondary: #6b7280;
+        --text-muted: #9ca3af;
+        --transition: all 0.3s ease;
+    }
+
+    /* Reset and base styles */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        line-height: 1.6;
+        color: var(--text-primary);
+    }
+
     /* Auth Page Specific Styles */
     .auth-bg {
         min-height: 100vh;
@@ -467,9 +352,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
         position: relative;
         overflow: hidden;
+        padding: 1rem;
     }
 
     /* Animated Background */
@@ -563,6 +448,7 @@
     .splash-content {
         text-align: center;
         color: white;
+        padding: 2rem;
     }
 
     .splash-logo {
@@ -635,7 +521,7 @@
     .auth-container {
         width: 100%;
         max-width: 1200px;
-        height: 600px;
+        min-height: 600px;
         background: var(--glass-bg);
         backdrop-filter: blur(20px);
         border: 1px solid var(--glass-border);
@@ -645,7 +531,6 @@
         overflow: hidden;
         position: relative;
         z-index: 10;
-        margin: 2rem;
     }
 
     .auth-container.slide-in {
@@ -787,12 +672,12 @@
         align-items: center;
         justify-content: center;
         position: relative;
+        padding: 2rem;
     }
 
     .form-container {
         width: 100%;
         max-width: 400px;
-        padding: 2rem;
     }
 
     .form-container.slide-out-left {
@@ -930,6 +815,8 @@
         align-items: center;
         margin-bottom: 2rem;
         font-size: 0.9rem;
+        flex-wrap: wrap;
+        gap: 1rem;
     }
 
     .checkbox-container {
@@ -956,6 +843,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-shrink: 0;
     }
 
     .checkbox-container input:checked ~ .checkmark {
@@ -1036,63 +924,504 @@
         text-decoration: underline;
     }
 
-    /* Responsive Design */
-    @media (max-width: 968px) {
+    /* Mobile-first responsive design */
+    @media (max-width: 1024px) {
         .auth-container {
-            flex-direction: column;
-            height: auto;
-            max-width: 500px;
-            margin: 1rem;
+            max-width: 90vw;
+            min-height: 500px;
         }
-
+        
         .auth-left {
             padding: 2rem;
-            text-align: center;
         }
-
+        
         .brand-content h2 {
             font-size: 2rem;
         }
-
+        
         .features-list {
             flex-direction: row;
             flex-wrap: wrap;
             justify-content: center;
             gap: 1rem;
         }
-
+        
         .feature-item {
-            min-width: 150px;
-        }
-
-        .auth-right {
-            padding: 1rem;
+            min-width: 180px;
         }
     }
 
-    @media (max-width: 480px) {
-        .form-container {
-            padding: 1rem;
+    @media (max-width: 968px) {
+        .auth-bg {
+            padding: 0.5rem;
+        }
+        
+        .auth-container {
+            flex-direction: column;
+            height: auto;
+            max-width: 95vw;
+            min-height: auto;
         }
 
+        .auth-left {
+            padding: 2rem 1.5rem;
+            text-align: center;
+            min-height: 300px;
+        }
+        
+        .brand-logo {
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .brand-content h2 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .brand-content p {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .features-list {
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .feature-item {
+            min-width: 140px;
+            font-size: 0.9rem;
+        }
+
+        .auth-right {
+            padding: 1.5rem;
+        }
+        
+        .form-header h2 {
+            font-size: 1.8rem;
+        }
+        
+        .decorative-elements {
+            display: none;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .auth-bg {
+            padding: 0.25rem;
+        }
+        
         .auth-container {
-            margin: 0.5rem;
             border-radius: var(--border-radius);
+            max-width: 98vw;
+        }
+        
+        .auth-left {
+            padding: 1.5rem 1rem;
+            min-height: 250px;
+        }
+        
+        .brand-logo h1 {
+            font-size: 1.5rem;
+        }
+        
+        .brand-logo .logo-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
         }
 
         .brand-content h2 {
             font-size: 1.5rem;
-        }   
-
+        }
+        
         .brand-content p {
-            font-size: 1rem;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
         }
 
         .features-list {
             flex-direction: column;
             align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .feature-item {
+            min-width: auto;
+            font-size: 0.85rem;
+        }
+
+        .auth-right {
+            padding: 1rem;
+        }
+        
+        .form-container {
+            max-width: 100%;
+        }
+        
+        .form-header h2 {
+            font-size: 1.6rem;
+        }
+        
+        .form-header p {
+            font-size: 0.9rem;
+        }
+        
+        .form-input {
+            padding: 0.875rem 0.875rem 0.875rem 2.5rem;
+            font-size: 0.95rem;
+        }
+        
+        .input-icon {
+            left: 0.875rem;
+            font-size: 1rem;
+        }
+        
+        .password-toggle {
+            right: 0.875rem;
+        }
+        
+        .form-options {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .checkbox-container {
+            font-size: 0.85rem;
+        }
+        
+        .forgot-link {
+            font-size: 0.85rem;
+            align-self: flex-end;
+        }
+        
+        .submit-btn {
+            padding: 0.875rem;
+            font-size: 1rem;
+        }
+        
+        .form-footer {
+            font-size: 0.9rem;
         }
     }
-    </style>
-</body>
-</html>
+
+    @media (max-width: 480px) {
+        .splash-title {
+            font-size: 2rem;
+        }
+        
+        .splash-text {
+            font-size: 1rem;
+        }
+        
+        .logo-circle {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+        
+        .auth-left {
+            padding: 1rem;
+            min-height: 200px;
+        }
+        
+        .brand-logo {
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .brand-logo h1 {
+            font-size: 1.3rem;
+        }
+        
+        .brand-logo .logo-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 1.1rem;
+        }
+
+        .brand-content h2 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .brand-content p {
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .features-list {
+            gap: 0.375rem;
+        }
+        
+        .feature-item {
+            font-size: 0.8rem;
+        }
+        
+        .feature-item i {
+            font-size: 0.9rem;
+        }
+
+        .auth-right {
+            padding: 0.75rem;
+        }
+        
+        .form-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-header h2 {
+            font-size: 1.4rem;
+        }
+        
+        .input-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-input {
+            padding: 0.75rem 0.75rem 0.75rem 2.25rem;
+            font-size: 0.9rem;
+        }
+        
+        .input-icon {
+            left: 0.75rem;
+            font-size: 0.9rem;
+        }
+        
+        .password-toggle {
+            right: 0.75rem;
+            padding: 0.375rem;
+        }
+        
+        .checkmark {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .submit-btn {
+            padding: 0.75rem;
+            font-size: 0.95rem;
+            margin-bottom: 1.25rem;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .auth-left {
+            padding: 0.75rem;
+        }
+        
+        .brand-content h2 {
+            font-size: 1.2rem;
+        }
+        
+        .brand-content p {
+            font-size: 0.8rem;
+        }
+        
+        .feature-item {
+            font-size: 0.75rem;
+        }
+        
+        .auth-right {
+            padding: 0.5rem;
+        }
+        
+        .form-header h2 {
+            font-size: 1.3rem;
+        }
+        
+        .form-header p {
+            font-size: 0.85rem;
+        }
+        
+        .form-input {
+            padding: 0.6875rem 0.6875rem 0.6875rem 2rem;
+            font-size: 0.85rem;
+        }
+        
+        .input-icon {
+            left: 0.6875rem;
+            font-size: 0.85rem;
+        }
+        
+        .password-toggle {
+            right: 0.6875rem;
+        }
+        
+        .checkbox-container {
+            font-size: 0.8rem;
+        }
+        
+        .forgot-link {
+            font-size: 0.8rem;
+        }
+        
+        .submit-btn {
+            font-size: 0.9rem;
+        }
+        
+        .form-footer {
+            font-size: 0.85rem;
+        }
+    }
+
+    /* Landscape orientation fixes for mobile */
+    @media (max-height: 600px) and (orientation: landscape) {
+        .auth-bg {
+            align-items: flex-start;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        
+        .auth-container {
+            min-height: auto;
+            height: auto;
+        }
+        
+        .auth-left {
+            min-height: auto;
+            padding: 1rem;
+        }
+        
+        .brand-content h2 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .brand-content p {
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .features-list {
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .feature-item {
+            font-size: 0.75rem;
+            min-width: 120px;
+        }
+        
+        .form-header {
+            margin-bottom: 1rem;
+        }
+        
+        .input-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-options {
+            margin-bottom: 1rem;
+        }
+        
+        .submit-btn {
+            margin-bottom: 1rem;
+        }
+    }
+
+    /* High DPI display adjustments */
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+        .form-input {
+            border-width: 1px;
+        }
+        
+        .checkmark {
+            border-width: 1px;
+        }
+        
+        .strength-bar {
+            height: 3px;
+        }
+    }
+
+    /* Focus and accessibility improvements */
+    @media (prefers-reduced-motion: reduce) {
+        .floating-shape,
+        .deco-circle,
+        .logo-circle,
+        .loader-ring {
+            animation: none;
+        }
+        
+        .auth-container.slide-in {
+            animation: none;
+        }
+        
+        .form-container.slide-out-left,
+        .form-container.slide-in-right,
+        .form-container.slide-out-right,
+        .form-container.slide-in-left {
+            animation: none;
+        }
+        
+        .submit-btn:hover:not(:disabled) {
+            transform: none;
+        }
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+        .auth-right {
+            background: rgba(31, 41, 55, 0.95);
+        }
+        
+        .form-input {
+            background: rgba(55, 65, 81, 0.8);
+            border-color: rgba(75, 85, 99, 0.8);
+            color: white;
+        }
+        
+        .form-input:focus {
+            border-color: #667eea;
+            background: rgba(55, 65, 81, 0.9);
+        }
+        
+        .form-header h2 {
+            color: white;
+        }
+        
+        .form-header p,
+        .checkbox-container,
+        .form-footer {
+            color: rgba(229, 231, 235, 0.8);
+        }
+        
+        .input-icon,
+        .password-toggle {
+            color: rgba(156, 163, 175, 0.8);
+        }
+        
+        .password-toggle:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .strength-text {
+            color: rgba(156, 163, 175, 0.8);
+        }
+    }
+
+    /* Print styles */
+    @media print {
+        .bg-animation,
+        .floating-shape,
+        .decorative-elements {
+            display: none;
+        }
+        
+        .auth-bg {
+            background: white;
+        }
+        
+        .auth-container {
+            box-shadow: none;
+            border: 1px solid #ccc;
+        }
+    }
