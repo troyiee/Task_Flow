@@ -1,0 +1,2456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Completed Tasks - TaskFlow</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<style>
+        /* Modern CSS Variables for Consistent Design */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --dark-glass: rgba(0, 0, 0, 0.1);
+            
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+            
+            --border-radius: 16px;
+            --border-radius-sm: 8px;
+            --border-radius-lg: 24px;
+            
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-fast: all 0.15s ease;
+            
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 80px;
+        }
+
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body.dashboard-bg {
+            min-height: 100vh;
+            background: var(--primary-gradient);
+            background-attachment: fixed;
+            display: flex;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif, 'Poppins';
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            width: 50px;
+            height: 50px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 2001;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .mobile-menu-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        /* Overlay for mobile */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Modern Sidebar Design */
+        .sidebar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
+            color: #fff;
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: var(--transition);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+            min-width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
+            min-height: 80px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: var(--transition);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--success-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+            box-shadow: var(--shadow-md);
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        /* Menu icon replacement when collapsed */
+        .sidebar.collapsed .logo-icon {
+            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+
+        .sidebar.collapsed .logo-icon:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .sidebar-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+            transition: var(--transition);
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .sidebar-title {
+            opacity: 0;
+            width: 0;
+        }
+
+        .sidebar-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        /* Hide toggle button when collapsed */
+        .sidebar.collapsed .sidebar-toggle {
+            opacity: 0;
+            width: 0;
+            padding: 0;
+            margin: 0;
+            border: none;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 1rem 0;
+            flex: 1;
+        }
+
+        .sidebar-nav li {
+            margin: 0.5rem 1rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 1rem;
+            border-radius: var(--border-radius-sm);
+            transition: var(--transition);
+            font-weight: 500;
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: var(--transition);
+        }
+
+        .nav-link:hover::before {
+            left: 100%;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        .nav-link.logout:hover {
+            background: rgba(248, 113, 113, 0.2);
+            color: #fecaca;
+        }
+
+        .nav-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .nav-text {
+            white-space: nowrap;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .sidebar.collapsed .nav-text {
+            opacity: 0;
+            width: 0;
+        }
+
+        .sidebar.collapsed .nav-link {
+            justify-content: center;
+            padding: 1rem 0.5rem;
+        }
+
+        /* Modern Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            width: calc(100% - var(--sidebar-width));
+            min-height: 100vh;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .main-content.expanded {
+            margin-left: var(--sidebar-collapsed-width);
+            width: calc(100% - var(--sidebar-collapsed-width));
+        }
+
+        /* Dashboard Header */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .welcome-section h1.welcome-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+
+        .welcome-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .date-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .current-date {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .current-time {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 2rem;
+            font-weight: 300;
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        /* Modern Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            transition: var(--transition);
+        }
+
+        .stat-card.stat-primary::before { background: var(--primary-gradient); }
+        .stat-card.stat-success::before { background: var(--success-gradient); }
+        .stat-card.stat-warning::before { background: var(--warning-gradient); }
+        .stat-card.stat-info::before { background: var(--secondary-gradient); }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            position: relative;
+        }
+
+        .stat-card.stat-primary .stat-icon { background: var(--primary-gradient); }
+        .stat-card.stat-success .stat-icon { background: var(--success-gradient); }
+        .stat-card.stat-warning .stat-icon { background: var(--warning-gradient); }
+        .stat-card.stat-info .stat-icon { background: var(--secondary-gradient); }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            margin: 0;
+        }
+
+        .section-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Task Filters */
+        .task-filters {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .filter-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        /* Modern Task Form */
+        .task-form-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .form-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-header h3 {
+            color: #fff;
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .task-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-input {
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius-sm);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 1rem;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Priority container and label styles */
+        .task-priority-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .priority-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .priority-label.priority-low {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: #ffffff;
+            border-color: white;
+            border: 2px solid;
+        }
+
+        .priority-label.priority-medium {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: #ffffff;
+            border-color: white;
+            border: 2px solid;
+        }
+
+        .priority-label.priority-high {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: #ffffff;
+            border-color: white;
+            border: 2px solid;
+        }
+
+        /* Modern Buttons */
+        .btn-primary,
+        .btn-secondary {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--success-gradient);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        /* Modern Task Cards */
+        .tasks-container {
+            position: relative;
+        }
+
+        .task-grid {
+            display: grid;
+            gap: 1rem;
+            list-style: none;
+        }
+
+        .task-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            transition: var(--transition);
+            animation: slideInUp 0.5s ease forwards;
+            opacity: 0;
+            transform: translateY(20px);
+            box-shadow: var(--shadow-md);
+        }
+
+        @keyframes slideInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .task-priority {
+            width: 4px;
+            height: 20px;
+            border-radius: 2px;
+        }
+
+        .priority-low { background: var(--success-gradient); }
+        .priority-medium { background: var(--warning-gradient); }
+        .priority-high { background: var(--danger-gradient); }
+
+        .task-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Bulk Actions Bar */
+        .bulk-actions-bar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-md);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .bulk-actions-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .bulk-actions-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .bulk-action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .export-btn {
+            background: var(--success-gradient);
+            color: white;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .clear-btn {
+            background: var(--danger-gradient);
+            color: white;
+        }
+
+        .clear-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Task Selection Checkbox */
+        .task-selection-checkbox {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            z-index: 10;
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary-gradient);
+        }
+
+        .task-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .task-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .edit-btn:hover {
+            background: rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+        }
+
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+
+        .task-content {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        /* Simple and Reliable Checkbox Styling */
+        .task-checkbox {
+            position: relative;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .task-checkbox input[type="checkbox"] {
+            opacity: 0;
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            z-index: 2;
+            margin: 0;
+        }
+
+        .checkbox-custom {
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            position: relative;
+            backdrop-filter: blur(10px);
+            font-size: 14px;
+            font-weight: bold;
+            color: transparent;
+        }
+
+        .checkbox-custom:hover {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+
+        .task-checkbox input[type="checkbox"]:checked + .checkbox-custom {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+        }
+
+        .task-checkbox input[type="checkbox"]:checked + .checkbox-custom::after {
+            content: '✓';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            line-height: 1;
+            animation: checkPop 0.2s ease-out;
+        }
+
+        @keyframes checkPop {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Focus styles for accessibility */
+        .task-checkbox input[type="checkbox"]:focus + .checkbox-custom {
+            outline: 2px solid rgba(79, 172, 254, 0.5);
+            outline-offset: 2px;
+        }
+
+        .task-details {
+            flex: 1;
+        }
+
+        .task-title {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .task-title.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .due-date {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .due-date.overdue {
+            color: #f87171;
+        }
+
+        .overdue-badge {
+            background: var(--danger-gradient);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        /* Loading State */
+        .loading-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .task-priority-container {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .priority-label {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.5rem;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .task-form {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+
+        @media (max-width: 1024px) {
+            :root {
+                --sidebar-width: 260px;
+            }
+            
+            .dashboard-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .welcome-section h1.welcome-title {
+                font-size: 2.2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 1rem;
+                padding-top: 4rem;
+            }
+            
+            .main-content.expanded {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+                width: var(--sidebar-width);
+                box-shadow: var(--shadow-xl);
+            }
+            
+            .sidebar.collapsed {
+                transform: translateX(-100%);
+                width: var(--sidebar-width);
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .welcome-section h1.welcome-title {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+        }
+
+        /* Error and success states */
+        .error-message {
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            color: #fecaca;
+            padding: 1rem;
+            border-radius: var(--border-radius-sm);
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            color: #86efac;
+            padding: 1rem;
+            border-radius: var(--border-radius-sm);
+            margin: 1rem 0;
+            display: none;
+        }
+
+        /* Notification Bell */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            position: relative;
+        }
+
+        .header-action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            transform: scale(1.05);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--danger-gradient);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        /* Due Soon Indicator */
+        .due-soon-indicator {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--warning-gradient);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            z-index: 2500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: none;
+        }
+
+        .due-soon-indicator:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .due-soon-indicator.show {
+            display: block;
+            animation: slideInUp 0.5s ease-out;
+        }
+
+        /* Toast notification styles */
+        .toast-notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 1rem 1.5rem;
+            color: #fff;
+            box-shadow: var(--shadow-lg);
+            z-index: 3000;
+            transform: translateX(100%);
+            opacity: 0;
+            transition: var(--transition);
+            max-width: 350px;
+        }
+
+        .toast-notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .toast-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .toast-message {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+        .completed-task {
+            border-left: 4px solid #10b981 !important;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .completion-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .task-actions-bottom {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .task-actions-bottom .task-btn {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .view-btn {
+            background: rgba(2, 96, 247, 0.38);
+            color: #ffffff;
+        }
+
+        .view-btn:hover {
+            background: rgba(3, 155, 249, 1);
+            transform: translateY(-1px);
+        }
+
+        .media-btn {
+            background: rgba(245, 159, 11, 0.43);
+            color:  #ffffff;
+        }
+
+        .media-btn:hover {
+            background: rgba(245, 233, 11, 1);
+            transform: translateY(-1px);
+        }
+
+        .media-count {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+        }
+        /* View Gallery Modal */
+/* Modernized Media Gallery Styles */
+.media-gallery-container {
+    padding: 0;
+    max-height: 70vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.media-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.media-count-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.media-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.media-grid::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.media-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.media-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.media-card {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    overflow: hidden;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: slideInUp 0.6s ease-out both;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.media-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.media-item-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.media-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.3s ease;
+    border: none;
+    outline: none;
+}
+
+.image-preview {
+    cursor: pointer;
+}
+
+.image-preview:hover {
+    transform: scale(1.05);
+}
+
+.video-preview {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.media-type-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 0.3rem 0.7rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.video-badge {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: #ffffff;
+}
+
+.image-badge {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: #ffffff;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    color: #ffffff;
+    font-size: 1.5rem;
+    backdrop-filter: blur(2px);
+    cursor: pointer;
+    z-index: 10;
+}
+
+.image-container:hover .image-overlay {
+    opacity: 1;
+}
+
+.image-container {
+    cursor: pointer;
+}
+
+.error-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 2rem;
+}
+
+.media-info {
+    padding: 1rem 1.2rem;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.media-filename {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.media-description {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 0.7rem;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.media-date {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+}
+
+.media-footer {
+    padding: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.gallery-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    backdrop-filter: blur(10px);
+    min-width: 150px;
+    justify-content: center;
+}
+
+.primary-btn {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+}
+
+.primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.6);
+    background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+}
+
+.secondary-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+}
+
+/* Image Modal Styles */
+.image-modal-popup {
+    background: rgba(0, 0, 0, 0.95) !important;
+    box-shadow: none !important;
+}
+
+.image-modal-title {
+    color: #ffffff !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 1rem !important;
+}
+
+.modal-image {
+    border-radius: 8px !important;
+    max-height: 80vh !important;
+    width: auto !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .media-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .media-footer {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    
+    .gallery-action-btn {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .media-header {
+        padding: 0.8rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .media-grid {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+        padding: 0.8rem;
+    }
+    
+    .media-item-container {
+        height: 180px;
+    }
+    
+    .media-count-badge {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+}
+
+
+</style>
+</head>
+<body class="dashboard-bg">
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar Overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <div class="logo-icon" id="logo-icon" onclick="handleLogoClick()">
+                    <i class="fas fa-calendar-check" id="logo-icon-content"></i>
+                </div>
+                <span class="sidebar-title">TaskFlow</span>
+            </div>
+            <button class="sidebar-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-chevron-left" id="toggle-icon"></i>
+            </button>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="/dashboard" class="nav-link">
+                <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                <span class="nav-text">Dashboard</span>
+            </a></li>
+            <li><a href="#" onclick="showSection('my-tasks')" class="nav-link">
+                <span class="nav-icon"><i class="fas fa-user-check"></i></span>
+                <span class="nav-text">My Tasks</span>
+            </a></li>
+            <li><a href="/completed-tasks" class="nav-link active">
+                <span class="nav-icon"><i class="fas fa-check-circle"></i></span>
+                <span class="nav-text">Completed Tasks</span>
+            </a></li>
+            <li><a href="/gallery" class="nav-link">
+                <span class="nav-icon"><i class="fas fa-images"></i></span>
+                <span class="nav-text">Photo Gallery</span> 
+            </a></li>
+            <li><a href="/logout" class="nav-link logout">
+                <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+                <span class="nav-text">Logout</span>
+            </a></li>
+        </ul>
+
+    </div>
+
+    <!-- Main content -->
+    <div class="main-content" id="main-content">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div class="welcome-section">
+                <h1 class="welcome-title">
+                    <i class="fas fa-trophy" style="color: #ffd700; margin-right: 0.5rem;"></i>
+                    Completed Tasks
+                </h1>
+                <p class="welcome-subtitle">Great job! Here are all your completed tasks</p>
+            </div>
+            <div class="header-actions">
+                <div class="task-filters">
+                    <button class="filter-btn active" data-sort="priority">Sort by Priority</button>
+                    <button class="filter-btn" data-sort="date">Sort by Due Date</button>
+                    <button class="filter-btn" data-sort="completion">Sort by Completion</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-grid" style="margin-bottom: 2rem;">
+            <div class="stat-card stat-success">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="total-completed">0</div>
+                    <div class="stat-label">Total Completed</div>
+                </div>
+            </div>
+            <div class="stat-card stat-primary">
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="high-priority-completed">0</div>
+                    <div class="stat-label">High Priority</div>
+                </div>
+            </div>
+            <div class="stat-card stat-info">
+                <div class="stat-icon">
+                    <i class="fas fa-images"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="tasks-with-media">0</div>
+                    <div class="stat-label">With Media</div>
+                </div>
+            </div>
+            <div class="stat-card stat-warning">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="completed-this-week">0</div>
+                    <div class="stat-label">This Week</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks Container -->
+        <div class="tasks-container">
+            <!-- Bulk Actions Bar -->
+            <div id="bulk-actions-bar" class="bulk-actions-bar" style="display: none;">
+                <div class="bulk-actions-content">
+                    <span id="selected-count">0 tasks selected</span>
+                    <div class="bulk-actions-buttons">
+                        <button id="export-selected-btn" class="bulk-action-btn export-btn" onclick="exportSelectedTasks()">
+                            <i class="fas fa-download"></i> Export Selected
+                        </button>
+                        <button id="clear-selection-btn" class="bulk-action-btn clear-btn" onclick="clearTaskSelection()">
+                            <i class="fas fa-times"></i> Clear Selection
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="loading-state" class="loading-state">
+                <div class="loading-spinner"></div>
+                <p>Loading completed tasks...</p>
+            </div>
+            
+            <div id="completed-tasks-list" class="task-grid" style="display: none;"></div>
+            
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <div class="empty-icon">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <h3>No completed tasks yet</h3>
+                <p>Complete some tasks to see them here!</p>
+                <a href="/dashboard#my-tasks" class="btn-primary" style="display: inline-block; margin-top: 1rem; text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i> Go to My Tasks
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let completedTasks = [];
+        let currentSort = 'priority';
+        let selectedTasks = new Set();
+
+        // Initialize page
+        window.addEventListener('DOMContentLoaded', function() {
+            loadCompletedTasks();
+            setupEventListeners();
+            setupResponsiveHandlers();
+        });
+
+        // Load completed tasks
+        async function loadCompletedTasks() {
+            const loadingState = document.getElementById('loading-state');
+            const tasksList = document.getElementById('completed-tasks-list');
+            const emptyState = document.getElementById('empty-state');
+            
+            try {
+                loadingState.style.display = 'block';
+                tasksList.style.display = 'none';
+                emptyState.style.display = 'none';
+
+                // Load tasks from API instead of localStorage
+                const response = await fetch('/api/tasks');
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Filter only completed tasks
+                    completedTasks = result.tasks.filter(task => task.completed);
+                    console.log(`Loaded ${completedTasks.length} completed tasks from API`);
+                } else {
+                    console.error('Failed to load tasks:', result.error);
+                    completedTasks = [];
+                }
+                
+                updateStatistics();
+                renderTasks();
+            } catch (error) {
+                console.error('Error loading completed tasks:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to load completed tasks. Please try again.',
+                    confirmButtonText: 'Retry'
+                }).then(() => {
+                    location.reload();
+                });
+                completedTasks = [];
+            } finally {
+                loadingState.style.display = 'none';
+            }
+        }
+
+        // Update statistics
+        async function updateStatistics() {
+            const total = completedTasks.length;
+            const highPriority = completedTasks.filter(t => t.priority === 'high').length;
+            
+            try {
+                // Get media files from API instead of localStorage
+                const mediaResponse = await fetch('/api/media');
+                const mediaResult = await mediaResponse.json();
+                
+                let withMedia = 0;
+                if (mediaResult.success) {
+                    const mediaFiles = mediaResult.media;
+                    withMedia = completedTasks.filter(t => {
+                        const taskMediaCount = mediaFiles.filter(media => media.task_id === t.id).length;
+                        return taskMediaCount > 0;
+                    }).length;
+                }
+                
+                // Calculate completed this week
+                const oneWeekAgo = new Date();
+                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                const thisWeek = completedTasks.filter(t => {
+                    const completionDate = new Date(t.completed_at || t.created_at);
+                    return completionDate >= oneWeekAgo;
+                }).length;
+
+                animateNumber('total-completed', total);
+                animateNumber('high-priority-completed', highPriority);
+                animateNumber('tasks-with-media', withMedia);
+                animateNumber('completed-this-week', thisWeek);
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+                // Fallback to basic stats without media count
+                animateNumber('total-completed', total);
+                animateNumber('high-priority-completed', highPriority);
+                animateNumber('tasks-with-media', 0);
+                animateNumber('completed-this-week', 0);
+            }
+        }
+
+        // Animate number changes
+        function animateNumber(elementId, target) {
+            const element = document.getElementById(elementId);
+            const current = parseInt(element.textContent) || 0;
+            
+            if (current === target) return;
+            
+            const increment = target > current ? 1 : -1;
+            const duration = 1000;
+            const steps = Math.abs(target - current);
+            const stepTime = Math.max(duration / steps, 50);
+
+            let currentValue = current;
+            const timer = setInterval(() => {
+                currentValue += increment;
+                element.textContent = currentValue;
+                if (currentValue === target) {
+                    clearInterval(timer);
+                }
+            }, stepTime);
+        }
+
+        // Render tasks
+        async function renderTasks() {
+            const tasksList = document.getElementById('completed-tasks-list');
+            const emptyState = document.getElementById('empty-state');
+            
+            if (completedTasks.length === 0) {
+                tasksList.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tasksList.style.display = 'grid';
+            tasksList.innerHTML = '';
+
+            // Sort tasks based on current sort method
+            const sortedTasks = [...completedTasks].sort((a, b) => {
+                switch (currentSort) {
+                    case 'priority':
+                        const priorityOrder = { 'high': 1, 'medium': 2, 'low': 3 };
+                        return priorityOrder[a.priority] - priorityOrder[b.priority];
+                    case 'date':
+                        if (!a.due_date && !b.due_date) return 0;
+                        if (!a.due_date) return 1;
+                        if (!b.due_date) return -1;
+                        return new Date(b.due_date) - new Date(a.due_date);
+                    case 'completion':
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    default:
+                        return 0;
+                }
+            });
+
+            // Create all task cards
+            for (let i = 0; i < sortedTasks.length; i++) {
+                const taskCard = await createTaskCard(sortedTasks[i], i);
+                tasksList.appendChild(taskCard);
+            }
+        }
+
+        // Create task card
+
+        async function createTaskCard(task, index) {
+            const div = document.createElement('div');
+            div.className = 'task-card completed-task';
+            div.style.animationDelay = `${index * 0.1}s`;
+            
+            const priorityClass = `priority-${task.priority}`;
+            const dueDateText = task.due_date ? formatDate(task.due_date) : 'No due date';
+            
+            // Get real-time media count from API
+            let taskMediaCount = 0;
+            try {
+                const mediaResponse = await fetch('/api/media');
+                const mediaResult = await mediaResponse.json();
+                if (mediaResult.success) {
+                    taskMediaCount = mediaResult.media.filter(media => media.task_id === task.id).length;
+                }
+            } catch (error) {
+                console.error('Error loading media count:', error);
+            }
+            
+            div.innerHTML = `
+                <input type="checkbox" class="task-selection-checkbox" 
+                       onchange="toggleTaskSelection(${task.id})" 
+                       id="select-task-${task.id}">
+                <div class="task-header">
+                    <div class="task-priority-container">
+                        <div class="task-priority ${priorityClass}"></div>
+                        <span class="priority-label priority-${task.priority}">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority</span>
+                    </div>
+                    <div class="completion-badge">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Completed</span>
+                    </div>
+                </div>
+                <div class="task-content">
+                    <div class="task-details">
+                        <h4 class="task-title completed">${task.title}</h4>
+                        <div class="task-meta">
+                            <div class="due-date">
+                                <i class="fas fa-calendar-alt"></i>
+                                Due: ${dueDateText}
+                            </div>
+                            <div class="media-count">
+                                <i class="fas fa-images"></i>
+                                ${taskMediaCount} files
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="task-actions-bottom">
+                    <button onclick="viewTaskDetails(${task.id})" class="task-btn view-btn" title="View details">
+                        <i class="fas fa-eye"></i> View Details
+                    </button>
+                    <button onclick="viewTaskMedia(${task.id})" class="task-btn media-btn" title="View media" ${taskMediaCount === 0 ? 'disabled style="opacity: 0.5;"' : ''}>
+                        <i class="fas fa-images"></i> Media ${taskMediaCount === 0 ? '(None)' : `(${taskMediaCount})`}
+                    </button>
+                </div>
+            `;
+            
+            return div;
+        }
+
+        // View task details
+        async function viewTaskDetails(taskId) {
+            const task = completedTasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            // Get current media count from API in real-time
+            let taskMediaCount = 0;
+            try {
+                const mediaResponse = await fetch('/api/media');
+                const mediaResult = await mediaResponse.json();
+                if (mediaResult.success) {
+                    taskMediaCount = mediaResult.media.filter(media => media.task_id === taskId).length;
+                }
+            } catch (error) {
+                console.error('Error loading media count:', error);
+            }
+
+            Swal.fire({
+                title: 'Task Details',
+                html: `
+                    <div style="text-align: left; padding: 1rem;">
+                        <div style="margin-bottom: 1rem;">
+                            <h4 style="color: #667eea; margin-bottom: 0.5rem;">Task Information</h4>
+                            <p><strong>Title:</strong> ${task.title}</p>
+                            <p><strong>Priority:</strong> <span class="priority-${task.priority}" style="text-transform: capitalize;">${task.priority}</span></p>
+                            <p><strong>Due Date:</strong> ${task.due_date ? formatDate(task.due_date) : 'No due date'}</p>
+                            <p><strong>Status:</strong> <span style="color: #10b981;">✓ Completed</span></p>
+                            ${task.description ? `<p><strong>Description:</strong> ${task.description}</p>` : ''}
+                        </div>
+                        ${taskMediaCount > 0 ? `
+                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.2);">
+                                <p><strong>Media Files:</strong> ${taskMediaCount} file${taskMediaCount !== 1 ? 's' : ''} attached</p>
+                                <button onclick="viewTaskMedia(${taskId}); Swal.close();" style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                    <i class="fas fa-images"></i> View Media Files
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `,
+                confirmButtonText: 'Close',
+                width: '500px'
+            });
+        }
+
+        // View task media - Modernized Design (Fixed Click Issue)
+        async function viewTaskMedia(taskId) {
+            try {
+                const mediaResponse = await fetch('/api/media');
+                const mediaResult = await mediaResponse.json();
+                
+                if (!mediaResult.success) {
+                    throw new Error('Failed to load media files');
+                }
+                
+                const taskMedia = mediaResult.media.filter(media => media.task_id === taskId);
+
+                if (taskMedia.length === 0) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'No Media Files',
+                        text: 'This task has no media attachments.',
+                        confirmButtonText: 'OK',
+                        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%)',
+                        color: '#ffffff',
+                        confirmButtonColor: '#10b981'
+                    });
+                    return;
+                }
+
+                let mediaHTML = taskMedia.map((media, index) => {
+                    const mediaType = media.is_video ? 'video' : 'image';
+                    const mediaTag = media.is_video ?
+                        `<div class="media-item-container video-container">
+                            <video controls class="media-preview video-preview">
+                                <source src="${media.url}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                            <div class="media-type-badge video-badge">
+                                <i class="fas fa-play-circle"></i>
+                                VIDEO
+                            </div>
+                        </div>` :
+                        `<div class="media-item-container image-container" onclick="window.openImageModal('${media.url.replace(/'/g, "\\'")}', '${media.original_filename.replace(/'/g, "\\'")}')">
+                            <img src="${media.url}" class="media-preview image-preview" 
+                                onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'error-placeholder\\'>Image failed to load</div>';">
+                            <div class="media-type-badge image-badge">
+                                <i class="fas fa-image"></i>
+                                IMAGE
+                            </div>
+                            <div class="image-overlay">
+                                <i class="fas fa-search-plus"></i>
+                                <span style="margin-top: 0.5rem; font-size: 0.8rem;">Click to view</span>
+                            </div>
+                        </div>`;
+
+                    return `
+                        <div class="media-card" style="animation-delay: ${index * 0.1}s;">
+                            ${mediaTag}
+                            <div class="media-info">
+                                <div class="media-filename">${media.original_filename}</div>
+                                ${media.description ? `<div class="media-description">${media.description}</div>` : ''}
+                                <div class="media-date">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    ${new Date(media.upload_date).toLocaleDateString('en-US', { 
+                                        year: 'numeric', 
+                                        month: 'short', 
+                                        day: 'numeric' 
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                Swal.fire({
+                    title: `<i class="fas fa-images"></i> Media Gallery`,
+                    html: `
+                        <div class="media-gallery-container">
+                            <div class="media-header">
+                                <div class="media-count-badge">
+                                    <i class="fas fa-photo-video"></i>
+                                    ${taskMedia.length} file${taskMedia.length !== 1 ? 's' : ''}
+                                </div>
+                            </div>
+                            <div class="media-grid">
+                                ${mediaHTML}
+                            </div>
+                            <div class="media-footer">
+                                <button onclick="openGalleryForTask(${taskId}); Swal.close();" class="gallery-action-btn primary-btn">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    <span>Open in Full Gallery</span>
+                                </button>
+                            </div>
+                        </div>
+                    `,
+                    width: '90%',
+                    maxWidth: '1000px',
+                    confirmButtonText: 'Close',
+                    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%)',
+                    color: '#ffffff',
+                    confirmButtonColor: '#10b981',
+                    showClass: {
+                        popup: 'animate__animated animate__fadeInUp animate__faster'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOutDown animate__faster'
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading task media:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to load media files. Please try again.',
+                    confirmButtonText: 'OK',
+                    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%)',
+                    color: '#ffffff',
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        }
+
+        // Helper function to open image in modal - Make it globally accessible
+        window.openImageModal = function(imageUrl, filename) {
+            Swal.fire({
+                title: filename,
+                imageUrl: imageUrl,
+                imageAlt: filename,
+                showCloseButton: true,
+                showConfirmButton: false,
+                width: '90%',
+                background: 'rgba(0, 0, 0, 0.95)',
+                backdrop: 'rgba(0, 0, 0, 0.8)',
+                customClass: {
+                    image: 'modal-image',
+                    popup: 'image-modal-popup',
+                    title: 'image-modal-title'
+                },
+                showClass: {
+                    popup: 'animate__animated animate__zoomIn animate__faster'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__zoomOut animate__faster'
+                }
+            });
+        };
+
+        function openGalleryForTask(taskId) {
+            // Store the task filter in sessionStorage so gallery can pick it up
+            sessionStorage.setItem('gallery_filter_task_id', taskId);
+            sessionStorage.setItem('gallery_filter_type', 'task-specific');
+            
+            // Navigate to gallery
+            window.location.href = '/gallery';
+        }
+             //window.addEventListener('storage', function(e) {
+                 //if (e.key === 'taskflow_media' || e.key === 'taskflow_tasks') {
+                   //console.log('Storage changed, refreshing data...');
+                    //refreshData();
+              //  }
+            //}); 
+
+
+                // Setup event listeners
+        function setupEventListeners() {
+            // Sort buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    currentSort = this.dataset.sort;
+                    renderTasks();
+                });
+            });
+        }
+
+        // Utility functions
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        // Copy sidebar functions from dashboard
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const overlay = document.getElementById('sidebar-overlay');
+            const toggleIcon = document.getElementById('toggle-icon');
+            const logoIcon = document.getElementById('logo-icon-content');
+            
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                const isOpen = sidebar.classList.toggle('mobile-open');
+                overlay.classList.toggle('active', isOpen);
+                
+                const icon = mobileMenuBtn.querySelector('i');
+                if (isOpen) {
+                    icon.className = 'fas fa-times';
+                } else {
+                    icon.className = 'fas fa-bars';
+                }
+                
+                document.body.style.overflow = isOpen ? 'hidden' : '';
+            } else {
+                const isCollapsed = sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded', isCollapsed);
+                
+                toggleIcon.className = isCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
+                
+                if (isCollapsed) {
+                    logoIcon.className = 'fas fa-bars';
+                } else {
+                    logoIcon.className = 'fas fa-calendar-check';
+                }
+            }
+        }
+
+        function handleLogoClick() {
+            const sidebar = document.getElementById('sidebar');
+            const isMobile = window.innerWidth <= 768;
+            
+            if (!isMobile && sidebar.classList.contains('collapsed')) {
+                toggleSidebar();
+            }
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('active');
+                
+                const icon = mobileMenuBtn.querySelector('i');
+                icon.className = 'fas fa-bars';
+                
+                document.body.style.overflow = '';
+            }
+        }
+
+        function setupResponsiveHandlers() {
+            window.addEventListener('resize', handleResize);
+            
+            document.addEventListener('click', function(event) {
+                const sidebar = document.getElementById('sidebar');
+                const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+                const sidebarToggle = document.querySelector('.sidebar-toggle');
+                
+                if (window.innerWidth <= 768 && 
+                    sidebar.classList.contains('mobile-open') &&
+                    !sidebar.contains(event.target) &&
+                    !mobileMenuBtn.contains(event.target) &&
+                    !sidebarToggle.contains(event.target)) {
+                    closeSidebar();
+                }
+            });
+        }
+
+        function handleResize() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const overlay = document.getElementById('sidebar-overlay');
+            const toggleIcon = document.getElementById('toggle-icon');
+            const logoIcon = document.getElementById('logo-icon-content');
+            
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('active');
+                mobileMenuBtn.querySelector('i').className = 'fas fa-bars';
+                document.body.style.overflow = '';
+                
+                const isCollapsed = sidebar.classList.contains('collapsed');
+                toggleIcon.className = isCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
+                logoIcon.className = isCollapsed ? 'fas fa-bars' : 'fas fa-calendar-check';
+            } else {
+                sidebar.classList.remove('collapsed');
+                mainContent.classList.remove('expanded');
+                logoIcon.className = 'fas fa-calendar-check';
+            }
+        }
+
+
+        function showSection(section) {
+            if (section === 'my-tasks') {
+                // Navigate to dashboard and show my-tasks section
+                window.location.href = '/dashboard#my-tasks';
+                return;
+            }
+            
+            // Handle other sections if needed
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Find and activate the corresponding nav link
+            const targetLink = document.querySelector(`[onclick="showSection('${section}')"]`);
+            if (targetLink) {
+                targetLink.classList.add('active');
+            }
+        }
+
+        async function refreshData() {
+            try {
+                await loadCompletedTasks();
+                console.log('Data refreshed from API');
+            } catch (error) {
+                console.error('Error refreshing data:', error);
+            }
+        }
+
+            // function refreshData() {
+                // Reload tasks and get updated media counts
+                //const allTasks = JSON.parse(localStorage.getItem('taskflow_tasks') || '[]');
+               // completedTasks = allTasks.filter(task => task.completed);
+                
+                // Ensure we have the latest media counts
+               // const mediaFiles = JSON.parse(localStorage.getItem('taskflow_media') || '[]');
+               // completedTasks.forEach(task => {
+                //    const actualMediaCount = mediaFiles.filter(media => media.task_id === task.id).length;
+                //    task.media_count = actualMediaCount;
+                //});
+                
+                //updateStatistics();
+               // renderTasks();
+           // } 
+
+            // Auto-refresh every 30 seconds to stay in sync
+            //
+
+            setInterval(refreshData, 30000); 
+
+        // Task Selection and Export Functions
+        function toggleTaskSelection(taskId) {
+            if (selectedTasks.has(taskId)) {
+                selectedTasks.delete(taskId);
+            } else {
+                selectedTasks.add(taskId);
+            }
+            updateBulkActionsVisibility();
+        }
+
+        function updateBulkActionsVisibility() {
+            const bulkActionsBar = document.getElementById('bulk-actions-bar');
+            const selectedCount = document.getElementById('selected-count');
+            
+            if (selectedTasks.size > 0) {
+                bulkActionsBar.style.display = 'block';
+                selectedCount.textContent = `${selectedTasks.size} task${selectedTasks.size === 1 ? '' : 's'} selected`;
+            } else {
+                bulkActionsBar.style.display = 'none';
+            }
+        }
+
+        function clearTaskSelection() {
+            selectedTasks.clear();
+            document.querySelectorAll('.task-selection-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateBulkActionsVisibility();
+        }
+
+        async function exportSelectedTasks() {
+            if (selectedTasks.size === 0) {
+                showError('Please select tasks to export');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/export-tasks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        task_ids: Array.from(selectedTasks)
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Create and download the text file
+                    const blob = new Blob([result.report], { 
+                        type: 'text/plain;charset=utf-8' 
+                    });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = result.filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    showSuccess(`Successfully exported ${selectedTasks.size} task${selectedTasks.size === 1 ? '' : 's'}!`);
+                    clearTaskSelection();
+                } else {
+                    showError('Export failed: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Export failed:', error);
+                showError('Export failed: ' + error.message);
+            }
+        }
+
+        // Keyboard shortcuts for task selection
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + A to select all visible tasks
+            if ((e.ctrlKey || e.metaKey) && e.key === 'a' && !e.target.matches('input, textarea, select')) {
+                e.preventDefault();
+                selectAllVisibleTasks();
+            }
+            
+            // Escape to clear selection
+            if (e.key === 'Escape') {
+                clearTaskSelection();
+            }
+        });
+
+        function selectAllVisibleTasks() {
+            const visibleCheckboxes = document.querySelectorAll('.task-selection-checkbox');
+            visibleCheckboxes.forEach(checkbox => {
+                const taskId = parseInt(checkbox.id.replace('select-task-', ''));
+                selectedTasks.add(taskId);
+                checkbox.checked = true;
+            });
+            updateBulkActionsVisibility();
+        }
+</script>
+</body>
+</html>

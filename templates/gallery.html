@@ -1,0 +1,3734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Photo Gallery - Task Scheduler</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .navbar h1 {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .gallery-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .gallery-header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .gallery-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .upload-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .upload-header h3 {
+            color: #333;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            background: rgba(102, 126, 234, 0.05);
+            color: #667eea;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .file-input-button:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #764ba2;
+            color: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .file-input-button i {
+            margin-right: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .bulk-file-preview {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 1rem;
+            background: #f8f9fa;
+            display: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .bulk-file-preview.active {
+            display: block;
+        }
+
+        .file-preview-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e0e0e0;
+        }
+
+        .file-preview-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .file-preview-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .file-preview-icon.video {
+            background: #764ba2;
+        }
+
+        .file-preview-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-preview-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .file-preview-size {
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        .file-remove-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 0.3rem 0.8rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .file-remove-btn:hover {
+            background: #dc2626;
+            transform: scale(1.05);
+        }
+
+        .bulk-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-input {
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input::placeholder {
+            color: #999;
+            font-style: italic;
+            opacity: 1;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .task-dropdown {
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .task-dropdown:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .upload-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Upload Progress */
+        .upload-progress-container {
+            display: none;
+            margin-top: 1rem;
+        }
+
+        .upload-progress-container.active {
+            display: block;
+        }
+
+        .upload-progress-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-progress-bar {
+            flex: 1;
+            height: 6px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 3px;
+            margin: 0 1rem;
+            overflow: hidden;
+        }
+
+        .upload-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .upload-status {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .upload-status.success {
+            color: #4ade80;
+        }
+
+        .upload-status.error {
+            color: #ef4444;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .filter-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            z-index: -1;
+        }
+
+        .filter-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: white;
+        }
+
+        .filter-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .filter-header p {
+            opacity: 0.8;
+            font-size: 1rem;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            color: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 60px;
+        }
+
+        .filter-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .filter-btn:hover::before {
+            left: 100%;
+        }
+
+        .filter-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+            border-color: rgba(255, 255, 255, 0.4);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .filter-btn.active::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border-radius: inherit;
+        }
+
+        .filter-btn i {
+            font-size: 1.1em;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .filter-btn .filter-count {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-left: auto;
+            min-width: 24px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .filter-btn.active .filter-count {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Special filter button styles */
+        .filter-btn[data-filter="all"] {
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%);
+            border-color: rgba(52, 211, 153, 0.3);
+        }
+
+        .filter-btn[data-filter="all"]:hover,
+        .filter-btn[data-filter="all"].active {
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.3) 0%, rgba(16, 185, 129, 0.3) 100%);
+            box-shadow: 0 10px 30px rgba(52, 211, 153, 0.3);
+        }
+
+        .filter-btn[data-filter="images"] {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .filter-btn[data-filter="images"]:hover,
+        .filter-btn[data-filter="images"].active {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(147, 51, 234, 0.3) 100%);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .filter-btn[data-filter="videos"] {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 127, 0.2) 100%);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .filter-btn[data-filter="videos"]:hover,
+        .filter-btn[data-filter="videos"].active {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(220, 38, 127, 0.3) 100%);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+        }
+
+        .filter-btn[data-filter="task-attached"] {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%);
+            border-color: rgba(168, 85, 247, 0.3);
+        }
+
+        .filter-btn[data-filter="task-attached"]:hover,
+        .filter-btn[data-filter="task-attached"].active {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.3) 0%, rgba(124, 58, 237, 0.3) 100%);
+            box-shadow: 0 10px 30px rgba(168, 85, 247, 0.3);
+        }
+
+        .filter-btn[data-filter="unattached"] {
+            background: linear-gradient(135deg, rgba(107, 114, 128, 0.2) 0%, rgba(75, 85, 99, 0.2) 100%);
+            border-color: rgba(107, 114, 128, 0.3);
+        }
+
+        .filter-btn[data-filter="unattached"]:hover,
+        .filter-btn[data-filter="unattached"].active {
+            background: linear-gradient(135deg, rgba(107, 114, 128, 0.3) 0%, rgba(75, 85, 99, 0.3) 100%);
+            box-shadow: 0 10px 30px rgba(107, 114, 128, 0.3);
+        }
+
+        .filter-btn[data-filter="completed-tasks"] {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.2) 100%);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .filter-btn[data-filter="completed-tasks"]:hover,
+        .filter-btn[data-filter="completed-tasks"].active {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(22, 163, 74, 0.3) 100%);
+            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.3);
+        }
+
+        .filter-btn[data-filter="recent"] {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.2) 100%);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .filter-btn[data-filter="recent"]:hover,
+        .filter-btn[data-filter="recent"].active {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(217, 119, 6, 0.3) 100%);
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+        }
+
+        .filter-btn[data-filter="large-files"] {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.2) 0%, rgba(234, 88, 12, 0.2) 100%);
+            border-color: rgba(249, 115, 22, 0.3);
+        }
+
+        .filter-btn[data-filter="large-files"]:hover,
+        .filter-btn[data-filter="large-files"].active {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.3) 0%, rgba(234, 88, 12, 0.3) 100%);
+            box-shadow: 0 10px 30px rgba(249, 115, 22, 0.3);
+        }
+
+        /* Quick actions row */
+        .filter-quick-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .quick-action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .quick-action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .filter-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .filter-section {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .filter-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 0.75rem;
+            }
+            
+            .filter-btn {
+                padding: 0.75rem 1rem;
+                font-size: 0.85rem;
+                min-height: 50px;
+            }
+            
+            .filter-btn i {
+                font-size: 1em;
+            }
+            
+            .filter-quick-actions {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .quick-action-btn {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .filter-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .filter-btn {
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 1rem 0.5rem;
+                text-align: center;
+            }
+            
+            .filter-btn .filter-count {
+                margin-left: 0;
+                margin-top: 0.25rem;
+            }
+        }
+
+        /* Animation for filter count updates */
+        @keyframes countUpdate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); background: rgba(255, 255, 255, 0.4); }
+            100% { transform: scale(1); }
+        }
+
+        .filter-count.updated {
+            animation: countUpdate 0.3s ease-out;
+        }
+
+        /* Task Progress Visualization */
+        .task-progress-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            color: white;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .task-progress-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .task-progress-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .task-progress-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(4px);
+        }
+
+        .task-progress-item.completed {
+            border-left-color: #4ade80;
+            opacity: 0.7;
+        }
+
+        .task-info h4 {
+            margin-bottom: 0.5rem;
+        }
+
+        .task-meta {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .media-count-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* Gallery Grid */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .media-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .media-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .media-preview {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            overflow: hidden;
+            background: #f8f9fa;
+        }
+
+        .media-preview img,
+        .media-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .media-card:hover .media-preview img,
+        .media-card:hover .media-preview video {
+            transform: scale(1.05);
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 1rem;
+            border-radius: 50%;
+            font-size: 2rem;
+        }
+
+        .task-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .media-info {
+            padding: 1.5rem;
+        }
+
+        .media-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .media-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .media-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 1rem;
+        }
+
+        .media-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            background: none;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .action-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .action-btn.delete {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+
+        .action-btn.delete:hover {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Bulk Actions */
+        .bulk-actions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: none; /* Hidden by default */
+            align-items: center;
+            gap: 1rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .bulk-actions.active {
+            display: flex; /* Show when active */
+        }
+
+        .bulk-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .bulk-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+        .media-checkbox {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        /* Error states */
+        .error-message {
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            color: #fecaca;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            color: #86efac;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 1rem;
+            }
+            
+            .navbar {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .filter-section {
+                flex-wrap: wrap;
+            }
+
+            .bulk-options {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Search and Sort Section */
+        .search-sort-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            color: white;
+        }
+
+        .search-sort-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .search-sort-controls {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .clear-search {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            display: none;
+        }
+
+        .clear-search.active {
+            display: block;
+        }
+
+        .sort-select {
+            padding: 0.75rem 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            min-width: 150px;
+        }
+
+        .sort-select option {
+            background: #333;
+            color: white;
+        }
+
+        .view-toggle {
+            display: flex;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .view-toggle button {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-toggle button.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .search-results-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Category Filter Enhancements */
+        .filter-section {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .filter-btn i {
+            font-size: 0.9rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .search-sort-controls {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .search-sort-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .filter-section {
+                justify-content: flex-start;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+            }
+            
+            .filter-btn {
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+        }
+        .media-card.selected {
+            border: 2px solid #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .media-checkbox {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            z-index: 10;
+            accent-color: #667eea;
+        }
+
+        .media-checkbox:checked {
+            background-color: #667eea;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+        <nav class="navbar">
+            <h1><i class="fas fa-images"></i> Task Gallery</h1>
+            <div class="nav-links">
+                <a href="/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="/completed-tasks"><i class="fas fa-check-circle"></i> Completed Tasks</a>
+                <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </nav>
+
+    <div class="container">
+        <div class="gallery-header">
+            <h2>Task Progress Gallery</h2>
+            <p>Visualize your task progress through media attachments</p>
+        </div>
+
+        <!-- Error and Success Messages -->
+        <div id="error-message" class="error-message"></div>
+        <div id="success-message" class="success-message"></div>
+
+        <!-- Task Progress Overview -->
+        <div class="task-progress-section">
+            <div class="progress-header">
+                <h3><i class="fas fa-chart-line"></i> Task Progress Overview</h3>
+                <button class="filter-btn" onclick="toggleProgressView()">
+                    <i class="fas fa-eye"></i> Toggle View
+                </button>
+            </div>
+            
+            <div class="progress-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalTasks">0</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="tasksWithMedia">0</div>
+                    <div class="stat-label">Tasks with Media</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalMediaFiles">0</div>
+                    <div class="stat-label">Total Media Files</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="completionRate">0%</div>
+                    <div class="stat-label">Completion Rate</div>
+                </div>
+            </div>
+
+            <div class="task-progress-list" id="taskProgressList">
+                <!-- Task progress items will be populated here -->
+            </div>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <div class="upload-header">
+                <h3><i class="fas fa-cloud-upload-alt"></i> Task Media Upload</h3>
+                <p>Upload optionally assign them to tasks</p>
+            </div>
+
+            <div class="file-input-wrapper">
+                <input type="file" id="bulkFileInput" name="bulkFiles" class="file-input" accept="image/*,video/mp4,video/webm,video/ogg,video/avi,video/mov" multiple> 
+                <div class="file-input-button">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Click to select files or drag and drop your files here</span>
+                </div>
+            </div>
+
+            <!-- File Preview Section -->
+            <div class="bulk-file-preview" id="bulkFilePreview">
+                <h4 style="margin-bottom: 1rem; color: #333;">Selected Files:</h4>
+                <div id="filePreviewList"></div>
+            </div>
+
+            <!-- Bulk Upload Options -->
+            <div class="bulk-options">
+                <div class="form-group">
+                    <label for="bulkTaskDropdown">Assign to Task (optional)</label>
+                    <select id="bulkTaskDropdown" class="task-dropdown">
+                        <option value="">No specific task</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="bulkDescription">Default Description (optional)</label>
+                    <textarea id="bulkDescription" class="form-input" rows="2" placeholder="Default description for all files..."></textarea>
+                </div>
+            </div>
+
+            <!-- Upload Progress -->
+            <div class="upload-progress-container" id="uploadProgressContainer">
+                <h4 style="margin-bottom: 1rem; color: #333;">Upload Progress:</h4>
+                <div id="uploadProgressList"></div>
+            </div>
+
+            <button type="button" class="upload-btn" id="bulkUploadBtn" onclick="handleBulkUpload()">
+                <i class="fas fa-upload"></i> Upload
+            </button>
+        </div>
+
+        <!-- Bulk Actions Panel -->
+        <div class="bulk-actions" id="bulkActions">
+            <span style="color: white;">Selected: <span id="selectedCount">0</span> items</span>
+            <button class="bulk-btn" id="bulkAssignBtn">
+                <i class="fas fa-link"></i> Assign to Task
+            </button>
+            <button class="bulk-btn" id="bulkDeleteBtn">
+                <i class="fas fa-trash"></i> Delete Selected
+            </button>
+            <button class="bulk-btn" id="clearSelectionBtn">
+                <i class="fas fa-times"></i> Clear Selection
+            </button>
+            <button class="bulk-btn" id="exportSelectedBtn">
+                <i class="fas fa-download"></i> Export Selected
+            </button>
+        </div>
+
+        <div class="search-sort-section">
+            <div class="search-sort-header">
+                <h3><i class="fas fa-search"></i> Search & Sort Media</h3>
+                <button class="filter-btn" onclick="showAdvancedFilters()">
+                    <i class="fas fa-filter"></i> Advanced Filters
+                </button>
+            </div>
+            
+            <div class="search-sort-controls">
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" 
+                        id="searchInput" 
+                        class="search-input" 
+                        placeholder="Search by filename, description, or task name..."
+                        oninput="handleSearch(this.value)">
+                    <button class="clear-search" id="clearSearch" onclick="clearSearch()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <select id="sortSelect" class="sort-select" onchange="handleSortChange(this.value)">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="name-asc">Name A-Z</option>
+                    <option value="name-desc">Name Z-A</option>
+                    <option value="size-asc">Smallest First</option>
+                    <option value="size-desc">Largest First</option>
+                    <option value="type">Group by Type</option>
+                </select>
+                
+                <div class="view-toggle">
+                    <button id="gridView" class="active" onclick="toggleView('grid')">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button id="listView" onclick="toggleView('list')">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="search-results-info" id="searchResultsInfo" style="display: none;">
+                <span id="searchResultsCount"></span>
+                <span id="searchResultsFilter"></span>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <button class="filter-btn active" data-filter="all">
+                <i class="fas fa-globe"></i> All Media
+            </button>
+            <button class="filter-btn" data-filter="images">
+                <i class="fas fa-image"></i> Images Only
+            </button>
+            <button class="filter-btn" data-filter="videos">
+                <i class="fas fa-video"></i> Videos Only
+            </button>
+            <button class="filter-btn" data-filter="task-attached">
+                <i class="fas fa-link"></i> Task Attached
+            </button>
+            <button class="filter-btn" data-filter="unattached">
+                <i class="fas fa-unlink"></i> Unattached
+            </button>
+            <button class="filter-btn" data-filter="completed-tasks">
+                <i class="fas fa-check-circle"></i> Completed Tasks
+            </button>
+            <button class="filter-btn" data-filter="recent">
+                <i class="fas fa-clock"></i> Recent (7 days)
+            </button>
+            <button class="filter-btn" data-filter="large-files">
+                <i class="fas fa-file-alt"></i> Large Files
+            </button>
+        </div>
+
+        <div id="galleryContent">
+            <div class="loading" id="loadingState">
+                <div class="loading-spinner"></div>
+                Loading your media...
+            </div>
+        </div>
+        
+        
+    </div>
+
+    <script>
+        // Global variables
+        let mediaFiles = [];
+        let tasks = [];
+        let currentFilter = 'all';
+        let selectedMedia = new Set();
+        let bulkFiles = [];
+        let currentSearch = '';
+        let currentSort = 'newest';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkURLParameters(); // ADD this line
+            setupEventListeners();
+            
+            // Synchronize task media counts on page load
+            synchronizeAllTaskMediaCounts();
+            
+            loadData().then(() => {
+                // Check for task-specific filter after data is loaded
+                checkTaskSpecificFilter();
+            });
+            
+            startAutoRefresh();
+        });
+
+            
+        async function loadData() {
+            try {
+                await Promise.all([
+                    loadTasks(),
+                    loadMediaFiles(),
+                    loadStats()
+                ]);
+                renderTaskProgress();
+                renderGallery();
+            } catch (error) {
+                showError('Failed to load data: ' + error.message);
+            }
+        }
+
+        async function loadTasks() {
+            try {
+                const response = await fetch('/api/tasks');
+                const data = await response.json();
+                
+                if (data.success) {
+                    tasks = data.tasks;
+                    console.log(`Loaded ${tasks.length} tasks from database`);
+                } else {
+                    console.error('Failed to load tasks:', data.error);
+                    tasks = [];
+                }
+                
+                populateTaskDropdown();
+            } catch (error) {
+                console.error('Failed to load tasks:', error);
+                tasks = [];
+                populateTaskDropdown();
+            }
+        }
+
+        async function loadMediaFiles() {
+            try {
+                showLoading(true);
+                
+                const response = await fetch('/api/media?_=' + Date.now()); // Add cache buster
+                const data = await response.json();
+                
+                if (data.success) {
+                    mediaFiles = data.media;
+                    console.log(`Loaded ${mediaFiles.length} media files from database`);
+                } else {
+                    console.error('Failed to load media files:', data.error);
+                    mediaFiles = [];
+                }
+                
+            } catch (error) {
+                console.error('Failed to load media files:', error);
+                showError('Failed to load media files: ' + error.message);
+                mediaFiles = [];
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const stats = data.stats;
+                    document.getElementById('totalTasks').textContent = stats.total_tasks;
+                    document.getElementById('tasksWithMedia').textContent = stats.tasks_with_media;
+                    document.getElementById('totalMediaFiles').textContent = stats.total_media;
+                    document.getElementById('completionRate').textContent = stats.completion_rate + '%';
+                } else {
+                    console.error('Failed to load stats:', data.error);
+                }
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        function saveMediaToStorage() {
+            try {
+                localStorage.setItem('taskflow_media', JSON.stringify(mediaFiles));
+            } catch (error) {
+                console.error('Failed to save media to storage:', error);
+                showError('Failed to save changes to storage');
+            }
+        }
+
+        function populateTaskDropdown() {
+            const bulkDropdown = document.getElementById('bulkTaskDropdown');
+            
+            bulkDropdown.innerHTML = '<option value="">No specific task</option>' + 
+                tasks.map(task => 
+                    `<option value="${task.id}">${task.completed ? '✅' : '📋'} ${task.title}</option>`
+                ).join('');
+        }
+
+        function setupEventListeners() {
+            // Filter buttons
+            document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    renderGallery();
+                });
+            });
+
+            // Bulk file input
+            const bulkFileInput = document.getElementById('bulkFileInput');
+            if (bulkFileInput) {
+                bulkFileInput.addEventListener('change', function(e) {
+                    handleBulkFileSelection(e.target.files);
+                });
+            }
+
+            // Drag and drop for bulk upload
+            const bulkFileButton = document.querySelector('.file-input-button');
+            if (bulkFileButton && bulkFileInput) {
+                setupDragAndDrop(bulkFileButton, bulkFileInput);
+            }
+
+            // Search input
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    handleSearch(this.value);
+                });
+                
+                searchInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        handleSearch(this.value);
+                    }
+                });
+            }
+
+            // Clear search button
+            const clearSearchBtn = document.getElementById('clearSearch');
+            if (clearSearchBtn) {
+                clearSearchBtn.addEventListener('click', clearSearch);
+            }
+
+            // Sort select
+            const sortSelect = document.getElementById('sortSelect');
+            if (sortSelect) {
+                sortSelect.addEventListener('change', function() {
+                    handleSortChange(this.value);
+                });
+            }
+
+            // View toggle buttons
+            const gridViewBtn = document.getElementById('gridView');
+            const listViewBtn = document.getElementById('listView');
+
+            if (gridViewBtn) {
+                gridViewBtn.addEventListener('click', function() {
+                    toggleView('grid');
+                });
+            }
+
+            if (listViewBtn) {
+                listViewBtn.addEventListener('click', function() {
+                    toggleView('list');
+                });
+            }
+
+            // Advanced filters button
+            const advancedFiltersBtn = document.querySelector('button[onclick="showAdvancedFilters()"]');
+            if (advancedFiltersBtn) {
+                advancedFiltersBtn.removeAttribute('onclick'); // Remove inline onclick
+                advancedFiltersBtn.addEventListener('click', showAdvancedFilters);
+            }
+
+            // Progress view toggle button
+            const progressToggleBtn = document.querySelector('button[onclick="toggleProgressView()"]');
+            if (progressToggleBtn) {
+                progressToggleBtn.removeAttribute('onclick'); // Remove inline onclick
+                progressToggleBtn.addEventListener('click', toggleProgressView);
+            }
+
+           // Bulk action buttons
+        const bulkAssignBtn = document.getElementById('bulkAssignBtn');
+        if (bulkAssignBtn) {
+            bulkAssignBtn.addEventListener('click', bulkAssignToTask);
+        }
+
+        const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+        if (bulkDeleteBtn) {
+            bulkDeleteBtn.addEventListener('click', bulkDelete);
+        }
+
+        const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+        if (clearSelectionBtn) {
+            clearSelectionBtn.addEventListener('click', clearSelection);
+        }
+
+        const exportSelectedBtn = document.getElementById('exportSelectedBtn');
+        if (exportSelectedBtn) {
+            exportSelectedBtn.addEventListener('click', exportSelectedMedia);
+        }
+        }
+
+        function setupDragAndDrop(button, input) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                button.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                button.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                button.addEventListener(eventName, unhighlight, false);
+            });
+
+            button.addEventListener('drop', handleDrop, false);
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            function highlight(e) {
+                button.style.borderColor = '#764ba2';
+                button.style.backgroundColor = 'rgba(118, 75, 162, 0.1)';
+            }
+
+            function unhighlight(e) {
+                button.style.borderColor = '#667eea';
+                button.style.backgroundColor = 'rgba(102, 126, 234, 0.05)';
+            }
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                // Update the input element with dropped files
+                input.files = files;
+                handleBulkFileSelection(files);
+            }
+        }
+
+        function handleBulkFileSelection(files) {
+            if (!files || files.length === 0) {
+                bulkFiles = [];
+                updateBulkFilePreview();
+                updateBulkFileInputText();
+                return;
+            }
+
+            // Convert FileList to Array and filter for images/videos only
+            const validFiles = Array.from(files).filter(file => {
+                const isImage = file.type.startsWith('image/');
+                const isVideo = file.type.startsWith('video/');
+                return isImage || isVideo;
+            });
+
+            if (validFiles.length !== files.length) {
+                const rejectedCount = files.length - validFiles.length;
+                showError(`${rejectedCount} file(s) were rejected. Only image and video files are allowed.`);
+            }
+
+            // Validate file sizes
+            if (validateFileSize(validFiles)) {
+                bulkFiles = validFiles;
+                showStorageWarning(); // Warn if storage is getting full
+            } else {
+                bulkFiles = [];
+            }
+
+            updateBulkFilePreview();
+            updateBulkFileInputText();
+        }
+
+        function updateBulkFilePreview() {
+            const preview = document.getElementById('bulkFilePreview');
+            const previewList = document.getElementById('filePreviewList');
+
+            if (bulkFiles.length === 0) {
+                preview.classList.remove('active');
+                return;
+            }
+
+            preview.classList.add('active');
+            previewList.innerHTML = '';
+
+            bulkFiles.forEach((file, index) => {
+                const isVideo = file.type.startsWith('video/');
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-preview-item';
+                fileItem.innerHTML = `
+                    <div class="file-preview-info">
+                        <div class="file-preview-icon ${isVideo ? 'video' : ''}">
+                            <i class="fas fa-${isVideo ? 'video' : 'image'}"></i>
+                        </div>
+                        <div class="file-preview-details">
+                            <div class="file-preview-name">${file.name}</div>
+                            <div class="file-preview-size">${formatFileSize(file.size)} • ${isVideo ? 'Video' : 'Image'}</div>
+                        </div>
+                    </div>
+                    <button type="button" class="file-remove-btn" onclick="removeBulkFile(${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                previewList.appendChild(fileItem);
+            });
+        }
+
+        function updateBulkFileInputText() {
+            const button = document.querySelector('.file-input-button span');
+            if (bulkFiles.length > 0) {
+                const imageCount = bulkFiles.filter(f => f.type.startsWith('image/')).length;
+                const videoCount = bulkFiles.filter(f => f.type.startsWith('video/')).length;
+                button.textContent = `Selected ${bulkFiles.length} files (${imageCount} images, ${videoCount} videos)`;
+            } else {
+                button.textContent = 'Click to select files or drag and drop multiple files here';
+            }
+        }
+
+        function removeBulkFile(index) {
+            bulkFiles.splice(index, 1);
+            updateBulkFilePreview();
+            updateBulkFileInputText();
+            
+            // Update the file input to reflect the changes
+            const dt = new DataTransfer();
+            bulkFiles.forEach(file => dt.items.add(file));
+            document.getElementById('bulkFileInput').files = dt.files;
+        }
+
+        function validateFileSize(files) {
+            const maxFileSize = 10 * 1024 * 1024; // Change from 2MB to 10MB per file
+            const maxTotalSize = 50 * 1024 * 1024; // Change from 8MB to 50MB total
+            
+            let totalSize = 0;
+            const oversizedFiles = [];
+            
+            for (const file of files) {
+                if (file.size > maxFileSize) {
+                    oversizedFiles.push(file.name);
+                }
+                totalSize += file.size;
+            }
+            
+            if (oversizedFiles.length > 0) {
+                showError(`These files are too large (max 10MB each): ${oversizedFiles.join(', ')}`);
+                return false;
+            }
+            
+            if (totalSize > maxTotalSize) {
+                showError(`Total file size too large. Please select fewer files or compress them. Current: ${formatFileSize(totalSize)}, Max: ${formatFileSize(maxTotalSize)}`);
+                return false;
+            }
+            
+            return true;
+        }
+            function getStorageUsage() {
+                try {
+                    const mediaData = localStorage.getItem('taskflow_media') || '[]';
+                    const taskData = localStorage.getItem('taskflow_tasks') || '[]';
+                    const totalUsed = mediaData.length + taskData.length;
+                    const maxStorage = 100 * 1024 * 1024; // Increase from 5MB to 25MB
+                    
+                    return {
+                        used: totalUsed,
+                        max: maxStorage,
+                        percentage: Math.round((totalUsed / maxStorage) * 100)
+                    };
+                } catch (error) {
+                    return { used: 0, max: 100 * 1024 * 1024, percentage: 0 };
+                }
+            }
+            function compressImage(file, maxWidth = 1920, quality = 0.8) {
+                return new Promise((resolve) => {
+                    // If it's not an image or already small, don't compress
+                    if (!file.type.startsWith('image/') || file.size < 1024 * 1024) {
+                        resolve(file);
+                        return;
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+
+                    img.onload = () => {
+                        // Calculate new dimensions
+                        let { width, height } = img;
+                        if (width > maxWidth) {
+                            height = (height * maxWidth) / width;
+                            width = maxWidth;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        // Draw and compress
+                        ctx.drawImage(img, 0, 0, width, height);
+                        canvas.toBlob(
+                            (blob) => {
+                                // Create a new file with compressed data
+                                const compressedFile = new File([blob], file.name, {
+                                    type: file.type,
+                                    lastModified: Date.now()
+                                });
+                                resolve(compressedFile);
+                            },
+                            file.type,
+                            quality
+                        );
+                    };
+
+                    img.src = URL.createObjectURL(file);
+                });
+            }
+
+        function showStorageWarning() {
+            const usage = getStorageUsage();
+            if (usage.percentage > 80) {
+                showError(`Storage is ${usage.percentage}% full (${formatFileSize(usage.used)}/${formatFileSize(usage.max)}). Consider deleting old media files.`);
+            }
+        }
+        // Handle bulk upload - FIXED VERSION
+        async function handleBulkUpload() {
+            if (bulkFiles.length === 0) {
+                showError('Please select files to upload');
+                return;
+            }
+
+            // Validate file sizes first
+            if (!validateFileSize(bulkFiles)) {
+                return;
+            }
+
+            const bulkUploadBtn = document.getElementById('bulkUploadBtn');
+            const selectedTaskId = document.getElementById('bulkTaskDropdown').value;
+            const description = document.getElementById('bulkDescription').value;
+            const progressContainer = document.getElementById('uploadProgressContainer');
+            const progressList = document.getElementById('uploadProgressList');
+
+            bulkUploadBtn.disabled = true;
+            bulkUploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            progressContainer.classList.add('active');
+            progressList.innerHTML = '';
+
+            let successCount = 0;
+            let errorCount = 0;
+            const uploadedMedia = []; // Track successfully uploaded media
+
+            try {
+                for (let i = 0; i < bulkFiles.length; i++) {
+                    const file = bulkFiles[i];
+
+                    const progressItem = document.createElement('div');
+                    progressItem.className = 'upload-progress-item';
+                    progressItem.innerHTML = `
+                        <span>${file.name}</span>
+                        <div class="upload-progress-bar">
+                            <div class="upload-progress-fill" id="progress-${i}"></div>
+                        </div>
+                        <span class="upload-status" id="status-${i}">Processing...</span>
+                    `;
+                    progressList.appendChild(progressItem);
+
+                    try {
+                        const progressFill = document.getElementById(`progress-${i}`);
+                        const statusElement = document.getElementById(`status-${i}`);
+
+                        // Compress large images first
+                        statusElement.textContent = 'Compressing...';
+                        const processedFile = await compressImage(file);
+                        
+                        // Update progress
+                        progressFill.style.width = '30%';
+                        statusElement.textContent = 'Converting...';
+
+                        // Check final storage space
+                        const currentStorageUsed = JSON.stringify(mediaFiles).length;
+                        const estimatedNewSize = processedFile.size * 1.33; // Base64 overhead
+                        
+                        if (currentStorageUsed + estimatedNewSize > 20 * 1024 * 1024) { // 20MB limit
+                            throw new Error('Storage limit would be exceeded');
+                        }
+
+                        progressFill.style.width = '60%';
+                        statusElement.textContent = 'Uploading...';
+                        
+                        // Create FormData for API upload
+                        const formData = new FormData();
+                        formData.append('file', processedFile);
+                        formData.append('description', description || '');
+                        if (selectedTaskId) {
+                            formData.append('task_id', selectedTaskId);
+                        }
+
+                        // Upload via API
+                        const uploadResponse = await fetch('/api/media', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const uploadData = await uploadResponse.json();
+                        if (uploadData.success) {
+                            // Add the uploaded media to our tracking array
+                            uploadedMedia.push(uploadData.media);
+                            
+                            progressFill.style.width = '90%';
+                            statusElement.textContent = 'Saving...';
+                            
+                            // Update progress to complete
+                            progressFill.style.width = '100%';
+                            statusElement.textContent = `Success${processedFile.size !== file.size ? ' (compressed)' : ''}`;
+                            statusElement.className = 'upload-status success';
+                            successCount++;
+                        } else {
+                            throw new Error(uploadData.error || 'Upload failed');
+                        }
+
+                    } catch (error) {
+                        console.error(`Upload error for ${file.name}:`, error);
+                        const progressFill = document.getElementById(`progress-${i}`);
+                        const statusElement = document.getElementById(`status-${i}`);
+
+                        if (progressFill && statusElement) {
+                            progressFill.style.width = '100%';
+                            progressFill.style.background = '#ef4444';
+                            statusElement.textContent = 'Error: ' + (error.message === 'Storage quota exceeded' ? 'Storage full' : error.message);
+                            statusElement.className = 'upload-status error';
+                        }
+                        errorCount++;
+                    }
+                }
+
+                if (successCount > 0) {
+                    // Add all successfully uploaded media to the beginning of the mediaFiles array
+                    mediaFiles.unshift(...uploadedMedia);
+                    
+                    // Update task media count if assigned to a task
+                    if (selectedTaskId) {
+                        const taskId = parseInt(selectedTaskId);
+                        updateTaskMediaCount(taskId);
+                    }
+
+                    // Reset form
+                    bulkFiles = [];
+                    updateBulkFilePreview();
+                    updateBulkFileInputText();
+                    document.getElementById('bulkDescription').value = '';
+                    document.getElementById('bulkTaskDropdown').value = '';
+                    document.getElementById('bulkFileInput').value = '';
+
+                    // Update displays immediately
+                    await loadStats();
+                    renderTaskProgress();
+                    renderGallery();
+
+                    const taskName = selectedTaskId ? tasks.find(t => t.id == selectedTaskId)?.title : null;
+                    const attachmentText = taskName ? ` and attached to task "${taskName}"` : '';
+                    
+                    showSuccess(`Successfully uploaded ${successCount} files${attachmentText}!`);
+                }
+
+                if (errorCount > 0) {
+                    if (successCount === 0) {
+                        showError(`All ${errorCount} files failed to upload. Try smaller files or fewer files at once.`);
+                    } else {
+                        showError(`${errorCount} files failed to upload due to storage limitations.`);
+                    }
+                }
+
+            } catch (error) {
+                console.error('Bulk upload error:', error);
+                showError('Bulk upload failed: ' + error.message);
+            } finally {
+                bulkUploadBtn.disabled = false;
+                bulkUploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload';
+
+                if (errorCount === 0) {
+                    setTimeout(() => {
+                        progressContainer.classList.remove('active');
+                    }, 3000);
+                }
+            }
+        }
+
+        // Helper function to convert file to base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function showLoading(show) {
+            const loadingState = document.getElementById('loadingState');
+            const galleryContent = document.getElementById('galleryContent');
+            
+            if (!loadingState || !galleryContent) return;
+            
+            if (show) {
+                loadingState.style.display = 'block';
+                const existingGrid = galleryContent.querySelector('.gallery-grid');
+                if (existingGrid) {
+                    existingGrid.style.display = 'none';
+                }
+            } else {
+                loadingState.style.display = 'none';
+                const existingGrid = galleryContent.querySelector('.gallery-grid');
+                if (existingGrid) {
+                    existingGrid.style.display = 'grid';
+                }
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        function renderTaskProgress() {
+            const progressList = document.getElementById('taskProgressList');
+            if (!progressList) return;
+            
+            progressList.innerHTML = '';
+
+            if (tasks.length === 0) {
+                progressList.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; opacity: 0.7;">
+                        <i class="fas fa-tasks" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>No tasks found. Create some tasks in the dashboard first!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            tasks.forEach(task => {
+                const taskMedia = mediaFiles.filter(m => m.task_id === task.id);
+                const progressItem = document.createElement('div');
+                progressItem.className = `task-progress-item ${task.completed ? 'completed' : ''}`;
+                
+                progressItem.innerHTML = `
+                    <div class="task-info">
+                        <h4>${task.completed ? '✅' : '📋'} ${task.title}</h4>
+                        <div class="task-meta">
+                            Due: ${formatDate(task.due_date)} • 
+                            Status: ${task.completed ? 'Completed' : 'In Progress'}
+                        </div>
+                    </div>
+                    <div class="media-count-badge">
+                        <i class="fas fa-images"></i> ${taskMedia.length} files
+                    </div>
+                `;
+                
+                progressItem.addEventListener('click', () => {
+                    filterByTask(task.id);
+                });
+                
+                progressList.appendChild(progressItem);
+            });
+        }
+
+        function renderGallery() {
+            const galleryContent = document.getElementById('galleryContent');
+            if (!galleryContent) return;
+            
+            let filteredMedia = [...mediaFiles]; // Create a copy
+            
+            // Apply filters
+            switch(currentFilter) {
+                case 'images':
+                    filteredMedia = filteredMedia.filter(media => !media.is_video);
+                    break;
+                case 'videos':
+                    filteredMedia = filteredMedia.filter(media => media.is_video);
+                    break;
+                case 'task-attached':
+                    filteredMedia = filteredMedia.filter(media => media.task_id !== null);
+                    break;
+                case 'unattached':
+                    filteredMedia = filteredMedia.filter(media => media.task_id === null);
+                    break;
+                case 'completed-tasks':
+                    const completedTaskIds = tasks.filter(t => t.completed).map(t => t.id);
+                    filteredMedia = filteredMedia.filter(media => completedTaskIds.includes(media.task_id));
+                    break;
+                case 'task-specific':
+                    // Filter for specific task from completed tasks page
+                    const filterTaskId = parseInt(sessionStorage.getItem('gallery_filter_task_id')) || 
+                                        parseInt(new URLSearchParams(window.location.search).get('task_id'));
+                    if (filterTaskId) {
+                        filteredMedia = filteredMedia.filter(media => media.task_id === filterTaskId);
+                    }
+                    break;
+            }
+
+            // Apply search filter
+            if (currentSearch) {
+                filteredMedia = filteredMedia.filter(media => 
+                    media.original_filename.toLowerCase().includes(currentSearch) ||
+                    (media.description && media.description.toLowerCase().includes(currentSearch)) ||
+                    (media.task_id && tasks.find(t => t.id === media.task_id)?.title.toLowerCase().includes(currentSearch))
+                );
+            }
+
+            // Apply sorting
+            filteredMedia.sort((a, b) => {
+                switch(currentSort) {
+                    case 'newest':
+                        return new Date(b.upload_date) - new Date(a.upload_date);
+                    case 'oldest':
+                        return new Date(a.upload_date) - new Date(b.upload_date);
+                    case 'name-asc':
+                        return a.original_filename.localeCompare(b.original_filename);
+                    case 'name-desc':
+                        return b.original_filename.localeCompare(a.original_filename);
+                    case 'size-asc':
+                        return a.file_size - b.file_size;
+                    case 'size-desc':
+                        return b.file_size - a.file_size;
+                    default:
+                        return 0;
+                }
+            });
+
+            // Show empty state if no media
+            if (filteredMedia.length === 0) {
+                const emptyMessage = currentFilter === 'task-specific' ?
+                    'This task has no media attachments' :
+                    currentSearch ? 
+                        `No media files found matching "${currentSearch}"` : 
+                        mediaFiles.length === 0 ? 
+                            'No media files uploaded yet' : 
+                            'No media files match the current filter';
+                            
+                galleryContent.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-${mediaFiles.length === 0 ? 'cloud-upload-alt' : 'search'}"></i>
+                        <h3>${emptyMessage}</h3>
+                        <p>${currentFilter === 'task-specific' ? 
+                            'This task doesn\'t have any media files attached yet.' :
+                            mediaFiles.length === 0 ? 
+                                'Upload some photos and videos to get started!' : 
+                                'Try adjusting your search or filter criteria.'}</p>
+                        ${currentFilter === 'task-specific' ? 
+                            '<a href="/completed-tasks" class="btn-primary" style="display: inline-block; margin-top: 1rem; text-decoration: none;"><i class="fas fa-arrow-left"></i> Back to Completed Tasks</a>' : 
+                            ''}
+                    </div>
+                `;
+                return;
+            }
+                // Render gallery grid
+                const galleryHTML = `
+                    <div class="gallery-grid">
+                        ${filteredMedia.map(media => createMediaCard(media)).join('')}
+                    </div>
+                `;
+
+                galleryContent.innerHTML = galleryHTML;
+
+                // Maintain checkbox states for selected items
+                selectedMedia.forEach(mediaId => {
+                    const checkbox = document.querySelector(`[data-id="${mediaId}"] .media-checkbox`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
+                });
+                setTimeout(() => {
+                selectedMedia.forEach(mediaId => {
+                    const mediaCard = document.querySelector(`[data-id="${mediaId}"]`);
+                    const checkbox = mediaCard?.querySelector('.media-checkbox');
+                    if (mediaCard && checkbox) {
+                        mediaCard.classList.add('selected');
+                        checkbox.checked = true;
+                    }
+                });
+            }, 0);
+            }
+
+        function createMediaCard(media) {
+            const uploadDate = new Date(media.upload_date).toLocaleDateString();
+            const fileSize = formatFileSize(media.file_size);
+            const associatedTask = tasks.find(t => t.id === media.task_id);
+
+            // Handle media content display
+            let mediaContent;
+            if (media.is_video) {
+                mediaContent = `
+                    <video preload="metadata" style="width: 100%; height: 100%; object-fit: cover;" muted>
+                        <source src="${media.url}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="video-overlay">
+                        <i class="fas fa-play"></i>
+                    </div>
+                `;
+            } else {
+                mediaContent = `
+                    <img src="${media.url}" alt="${media.original_filename}" 
+                        style="width: 100%; height: 100%; object-fit: cover;"
+                        onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;color:#666;\\'>Image failed to load</div>';">
+                `;
+            }
+
+            return `
+                <div class="media-card" data-id="${media.id}">
+                    <div class="media-preview">
+                        ${mediaContent}
+                        ${associatedTask ?
+                            `<div class="task-tag">${associatedTask.completed ? '✅' : '📋'} ${associatedTask.title}</div>` :
+                            '<div class="task-tag" style="background: #6b7280;">📎 Unattached</div>'
+                        }
+                        <input type="checkbox" class="media-checkbox" onchange="event.stopPropagation(); toggleMediaSelection(${media.id})">
+                    </div>
+                    <div class="media-info">
+                        <div class="media-title">${media.original_filename}</div>
+                        ${media.description ? `<div class="media-description">${media.description}</div>` : ''}
+                        <div class="media-meta">
+                            <span><i class="fas fa-calendar"></i> ${uploadDate}</span>
+                            <span><i class="fas fa-file"></i> ${fileSize}</span>
+                        </div>
+                        <div class="media-actions">
+                            <button class="action-btn" onclick="viewMedia('${media.url}', '${media.original_filename}', ${media.is_video})">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            ${!associatedTask ?
+                                `<button class="action-btn" onclick="attachToTask(${media.id})">
+                                    <i class="fas fa-link"></i> Attach
+                                </button>` :
+                                `<button class="action-btn" onclick="viewTaskDetails(${associatedTask.id})">
+                                    <i class="fas fa-tasks"></i> Task
+                                </button>`
+                            }
+                            <button class="action-btn delete" onclick="deleteMedia(${media.id})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'No due date';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        function viewMedia(url, filename, isVideo) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.9);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+                backdrop-filter: blur(5px);
+            `;
+
+            const content = document.createElement('div');
+            content.style.cssText = `
+                max-width: 90%;
+                max-height: 90%;
+                position: relative;
+            `;
+
+            if (isVideo) {
+                content.innerHTML = `
+                    <video controls style="max-width: 100%; max-height: 100%; border-radius: 10px;" autoplay>
+                        <source src="${url}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                `;
+            } else {
+                content.innerHTML = `
+                    <img src="${url}" alt="${filename}" style="max-width: 100%; max-height: 100%; border-radius: 10px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+                `;
+            }
+
+            const closeBtn = document.createElement('button');
+            closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            closeBtn.style.cssText = `
+                position: absolute;
+                top: -50px;
+                right: 0;
+                background: rgba(255,255,255,0.2);
+                color: white;
+                border: none;
+                padding: 1rem;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 1.2rem;
+                backdrop-filter: blur(10px);
+                transition: all 0.3s ease;
+            `;
+
+            closeBtn.addEventListener('click', () => document.body.removeChild(modal));
+            content.appendChild(closeBtn);
+            modal.appendChild(content);
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            });
+
+            document.body.appendChild(modal);
+        }
+
+        async function attachToTask(mediaId) {
+            if (tasks.length === 0) {
+                showError('No tasks available. Please create tasks first in the dashboard.');
+                return;
+            }
+
+            const taskOptions = tasks.map(task => 
+                `<option value="${task.id}">${task.completed ? '✅' : '📋'} ${task.title}</option>`
+            ).join('');
+
+            const { value: taskId } = await Swal.fire({
+                title: 'Attach to Task',
+                html: `
+                    <div style="padding: 1.5rem;">
+                        <div style="margin-bottom: 2rem; text-align: center;">
+                            <div style="display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; margin-bottom: 1rem;">
+                                <i class="fas fa-link" style="color: white; font-size: 1.5rem;"></i>
+                            </div>
+                            <h3 style="color: #333; margin-bottom: 0.5rem; font-weight: 600;">Attach to Task</h3>
+                            <p style="color: #666; font-size: 0.95rem;">Choose which task to attach this media file to</p>
+                        </div>
+                        
+                        <div style="position: relative; margin-bottom: 1.5rem;">
+                            <div style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #667eea; z-index: 1;">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <select id="swal-task-select" style="
+                                width: 100%; 
+                                padding: 15px 15px 15px 45px; 
+                                font-size: 16px; 
+                                border: 2px solid #e1e5e9; 
+                                border-radius: 12px; 
+                                background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+                                color: #333;
+                                appearance: none;
+                                cursor: pointer;
+                                transition: all 0.3s ease;
+                                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                            " onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)';" onblur="this.style.borderColor='#e1e5e9'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.1)';">
+                                <option value="" selected disabled style="color: #999;">Select a task...</option>
+                                ${taskOptions}
+                            </select>
+                            <div style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #667eea;">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        
+                        <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); padding: 1rem; border-radius: 10px; border-left: 4px solid #667eea;">
+                            <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                                <i class="fas fa-info-circle" style="color: #667eea; margin-right: 0.5rem;"></i>
+                                <span style="font-weight: 600; color: #333;">Pro Tip</span>
+                            </div>
+                            <p style="color: #555; font-size: 0.9rem; margin: 0; line-height: 1.4;">
+                                Attaching media to tasks helps organize your files and track progress visually.
+                            </p>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Attach',
+                cancelButtonText: 'Cancel',
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    const selectedTaskId = document.getElementById('swal-task-select').value;
+                    if (!selectedTaskId) {
+                        Swal.showValidationMessage('Please select a task');
+                        return false;
+                    }
+                    return parseInt(selectedTaskId);
+                }
+            });
+
+            if (taskId) {
+                await updateMediaTask(mediaId, taskId);
+            }
+        }
+
+        async function updateMediaTask(mediaId, taskId) {
+            try {
+                const response = await fetch(`/api/media/${mediaId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ task_id: taskId })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    // Update local array immediately
+                    const mediaIndex = mediaFiles.findIndex(m => m.id === mediaId);
+                    if (mediaIndex !== -1) {
+                        mediaFiles[mediaIndex] = data.media;
+                    }
+                    
+                    // Get the task name for the success message
+                    const task = tasks.find(t => t.id === taskId);
+                    const taskName = task ? task.title : 'Unknown Task';
+                    
+                    // Update all displays immediately
+                    await loadStats();
+                    renderTaskProgress();
+                    renderGallery(); // This will show the updated media immediately
+                    
+                    showSuccess(`Media successfully attached to task: "${taskName}"`);
+                } else {
+                    throw new Error(data.error || 'Failed to update media');
+                }
+            } catch (error) {
+                console.error('Failed to attach media:', error);
+                showError('Failed to attach media: ' + error.message);
+            }
+        }
+
+        function viewTaskDetails(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) {
+                showError('Task not found');
+                return;
+            }
+            
+            const taskMedia = mediaFiles.filter(m => m.task_id === taskId);
+            
+            Swal.fire({
+                title: 'Task Details',
+                html: `
+                    <div style="text-align: left; padding: 1rem;">
+                        <p><strong>Title:</strong> ${task.title}</p>
+                        <p><strong>Status:</strong> ${task.completed ? 'Completed' : 'In Progress'}</p>
+                        <p><strong>Due Date:</strong> ${formatDate(task.due_date)}</p>
+                        <p><strong>Priority:</strong> ${task.priority}</p>
+                        <p><strong>Attached Media:</strong> ${taskMedia.length} files</p>
+                        ${task.description ? `<p><strong>Description:</strong> ${task.description}</p>` : ''}
+                    </div>
+                `,
+                confirmButtonText: 'Close'
+            });
+        }
+        
+        async function deleteMedia(mediaId) {
+            const result = await Swal.fire({
+                title: 'Delete Media?',
+                text: "This action cannot be undone!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, delete it!',
+                showLoaderOnConfirm: true,
+                preConfirm: async () => {
+                    try {
+                        const response = await fetch(`/api/media/${mediaId}`, {
+                            method: 'DELETE'
+                        });
+                        
+                        const data = await response.json();
+                        if (data.success) {
+                            // Remove from local array immediately
+                            mediaFiles = mediaFiles.filter(media => media.id !== mediaId);
+                            return { success: true };
+                        } else {
+                            throw new Error(data.error || 'Delete failed');
+                        }
+                    } catch (error) {
+                        Swal.showValidationMessage(error.message);
+                        return false;
+                    }
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            });
+
+            if (result.isConfirmed) {
+                // Remove from selected if it was selected
+                selectedMedia.delete(mediaId);
+                updateBulkActionsVisibility();
+                updateSelectedCount();
+                
+                // Update displays immediately
+                await loadStats();
+                renderTaskProgress();
+                renderGallery(); // This will show the updated gallery immediately
+                
+                showSuccess('Media file deleted successfully!');
+            }
+        }
+                
+
+        function filterByTask(taskId) {
+            const taskMedia = mediaFiles.filter(m => m.task_id === taskId);
+            const galleryContent = document.getElementById('galleryContent');
+            
+            if (taskMedia.length > 0) {
+                const galleryHTML = `
+                    <div class="gallery-grid">
+                        ${taskMedia.map(media => createMediaCard(media)).join('')}
+                    </div>
+                `;
+                galleryContent.innerHTML = galleryHTML;
+            } else {
+                const task = tasks.find(t => t.id === taskId);
+                galleryContent.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-images"></i>
+                        <h3>No media files for this task</h3>
+                        <p>${task ? `"${task.title}"` : 'This task'} doesn't have any media attachments yet.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Media selection functions
+        function toggleMediaSelection(mediaId) {
+            const mediaCard = document.querySelector(`[data-id="${mediaId}"]`);
+            const checkbox = mediaCard.querySelector('.media-checkbox');
+            
+            if (selectedMedia.has(mediaId)) {
+                selectedMedia.delete(mediaId);
+                mediaCard.classList.remove('selected');
+                checkbox.checked = false;
+            } else {
+                selectedMedia.add(mediaId);
+                mediaCard.classList.add('selected');
+                checkbox.checked = true;
+            }
+            updateBulkActionsVisibility();
+            updateSelectedCount();
+        }
+        function updateBulkActionsVisibility() {
+            const bulkActions = document.getElementById('bulkActions');
+            if (selectedMedia.size > 0) {
+                bulkActions.classList.add('active');
+            } else {
+                bulkActions.classList.remove('active');
+            }
+        }
+
+        function updateSelectedCount() {
+            const selectedCount = document.getElementById('selectedCount');
+            if (selectedCount) {
+                selectedCount.textContent = selectedMedia.size;
+            }
+        }
+
+        function clearSelection() {
+            selectedMedia.clear();
+            document.querySelectorAll('.media-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            document.querySelectorAll('.media-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            updateBulkActionsVisibility();
+            updateSelectedCount();
+        }
+
+      async function bulkAssignToTask() {
+        if (selectedMedia.size === 0) {
+            showError('Please select media files first');
+            return;
+        }
+
+        if (tasks.length === 0) {
+            showError('No tasks available. Please create tasks first in the dashboard.');
+            return;
+        }
+
+        const taskOptions = tasks.map(task => 
+            `<option value="${task.id}">${task.completed ? '✅' : '📋'} ${task.title}</option>`
+        ).join('');
+
+const { value: selectedTaskId } = await Swal.fire({
+    title: '',
+    html: `
+        <style>
+            .swal2-popup {
+                background: rgba(255, 255, 255, 0.1) !important;
+                backdrop-filter: blur(20px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                border-radius: 24px !important;
+                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
+                color: #fff !important;
+            }
+            
+            .modern-bulk-assign-container {
+                padding: 0;
+                text-align: left;
+                color: #fff !important;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            }
+            
+            .bulk-assign-header {
+                text-align: center;
+                padding: 2rem 2rem 1.5rem 2rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                margin-bottom: 2rem;
+            }
+            
+            .bulk-assign-icon {
+                width: 80px;
+                height: 80px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 1rem auto;
+                font-size: 2rem;
+                color: white;
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+                animation: float 3s ease-in-out infinite;
+            }
+            
+            @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-8px); }
+            }
+            
+            .bulk-assign-title {
+                font-size: 1.8rem;
+                font-weight: 700;
+                margin: 0 0 0.5rem 0;
+                background: linear-gradient(45deg, #fff, #e0e7ff);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            
+            .bulk-assign-subtitle {
+                color: rgba(255, 255, 255, 0.7);
+                font-size: 1rem;
+                margin: 0;
+            }
+            
+            .bulk-assign-content {
+                padding: 0 2rem;
+            }
+            
+            .selection-info {
+                background: rgba(79, 172, 254, 0.1);
+                border: 1px solid rgba(79, 172, 254, 0.3);
+                border-radius: 16px;
+                padding: 1.5rem;
+                margin-bottom: 2rem;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                backdrop-filter: blur(10px);
+            }
+            
+            .selection-icon {
+                width: 50px;
+                height: 50px;
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.2rem;
+                color: white;
+                flex-shrink: 0;
+            }
+            
+            .selection-details h4 {
+                margin: 0 0 0.5rem 0;
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: #fff !important;
+            }
+            
+            .selection-details p {
+                margin: 0;
+                color: rgba(255, 255, 255, 0.8) !important;
+                font-size: 0.9rem;
+            }
+            
+            .select-container {
+                margin-bottom: 2rem;
+            }
+            
+            .select-label {
+                display: block;
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: #fff !important;
+                margin-bottom: 1rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            
+            .modern-select-wrapper {
+                position: relative;
+                background: rgba(255, 255, 255, 0.1);
+                border: 2px solid rgba(255, 255, 255, 0.2);
+                border-radius: 16px;
+                overflow: hidden;
+                transition: all 0.3s ease;
+                backdrop-filter: blur(10px);
+            }
+            
+            .modern-select-wrapper:hover {
+                border-color: rgba(79, 172, 254, 0.5);
+                background: rgba(255, 255, 255, 0.15);
+                box-shadow: 0 0 20px rgba(79, 172, 254, 0.2);
+            }
+            
+            .modern-select-wrapper:focus-within {
+                border-color: rgba(79, 172, 254, 0.8);
+                background: rgba(255, 255, 255, 0.2);
+                box-shadow: 0 0 30px rgba(79, 172, 254, 0.3);
+            }
+            
+            .modern-select {
+                width: 100%;
+                padding: 1.25rem 3rem 1.25rem 1.5rem;
+                border: none;
+                background: transparent !important;
+                color: #fff !important;
+                font-size: 1rem;
+                font-weight: 500;
+                outline: none;
+                cursor: pointer;
+                appearance: none;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+            }
+            
+            .modern-select option {
+                background: #2d3748 !important;
+                color: #fff !important;
+                padding: 1rem;
+                font-size: 0.95rem;
+                font-weight: 500;
+                border: none;
+            }
+            
+            .modern-select option:hover {
+                background: #4a5568 !important;
+            }
+            
+            .modern-select option:disabled {
+                color: rgba(255, 255, 255, 0.5) !important;
+                background: #1a202c !important;
+            }
+            
+            .select-icon {
+                position: absolute;
+                right: 1.5rem;
+                top: 50%;
+                transform: translateY(-50%);
+                color: rgba(255, 255, 255, 0.7);
+                font-size: 1.2rem;
+                pointer-events: none;
+                transition: all 0.3s ease;
+            }
+            
+            .modern-select-wrapper:hover .select-icon {
+                color: rgba(79, 172, 254, 0.8);
+                transform: translateY(-50%) scale(1.1);
+            }
+            
+            .task-option {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.75rem;
+            }
+            
+            .bulk-assign-footer {
+                padding: 1.5rem 2rem 2rem 2rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                margin-top: 1rem;
+            }
+            
+            .footer-note {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                justify-content: center;
+                color: rgba(255, 255, 255, 0.6) !important;
+                font-size: 0.85rem;
+                background: rgba(255, 255, 255, 0.05);
+                padding: 1rem 1.5rem;
+                border-radius: 12px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .footer-note i {
+                color: rgba(79, 172, 254, 0.8);
+                font-size: 1rem;
+            }
+            
+            /* Custom scrollbar for select dropdown */
+            .modern-select::-webkit-scrollbar {
+                width: 8px;
+            }
+            
+            .modern-select::-webkit-scrollbar-track {
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 4px;
+            }
+            
+            .modern-select::-webkit-scrollbar-thumb {
+                background: rgba(79, 172, 254, 0.6);
+                border-radius: 4px;
+            }
+            
+            .modern-select::-webkit-scrollbar-thumb:hover {
+                background: rgba(79, 172, 254, 0.8);
+            }
+        </style>
+        
+        <div class="modern-bulk-assign-container">
+            <!-- Header Section -->
+            <div class="bulk-assign-header">
+                <div class="bulk-assign-icon">
+                    <i class="fas fa-link"></i>
+                </div>
+                <h2 class="bulk-assign-title">Bulk Assignment</h2>
+                <p class="bulk-assign-subtitle">Assign selected media files to tasks</p>
+            </div>
+            
+            <!-- Content Section -->
+            <div class="bulk-assign-content">
+                <!-- Selection Info -->
+                <div class="selection-info">
+                    <div class="selection-icon">
+                        <i class="fas fa-images"></i>
+                    </div>
+                    <div class="selection-details">
+                        <h4>Files Selected</h4>
+                        <p><strong>${selectedMedia.size}</strong> media files ready for assignment</p>
+                    </div>
+                </div>
+                
+                <!-- Task Selection -->
+                <div class="select-container">
+                    <label class="select-label">
+                        <i class="fas fa-tasks"></i>
+                        Choose Target Action
+                    </label>
+                    <div class="modern-select-wrapper">
+                        <select id="swal-bulk-task-select" class="modern-select">
+                            <option value="" selected disabled>🎯 Select an action...</option>
+                            ${taskOptions}
+                            <option value="unassign">🔗 Remove from all tasks</option>
+                        </select>
+                        <i class="fas fa-chevron-down select-icon"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="bulk-assign-footer">
+                <div class="footer-note">
+                    <i class="fas fa-info-circle"></i>
+                    <span>This action will update all selected files at once</span>
+                </div>
+            </div>
+        </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: '<i class="fas fa-check"></i> Apply Changes',
+    cancelButtonText: '<i class="fas fa-times"></i> Cancel',
+    customClass: {
+        popup: 'modern-settings-popup',
+        confirmButton: 'modern-confirm-btn',
+        cancelButton: 'modern-cancel-btn'
+    },
+    width: '600px',
+    showLoaderOnConfirm: true,
+    preConfirm: async () => {
+        const selectedValue = document.getElementById('swal-bulk-task-select').value;
+        if (selectedValue === '') {
+            Swal.showValidationMessage('Please select an action');
+            return false;
+        }
+
+        try {
+            const selectedArray = Array.from(selectedMedia);
+            let successCount = 0;
+
+            // Update each media file via API
+            for (const mediaId of selectedArray) {
+                const taskIdToAssign = selectedValue === 'unassign' ? null : parseInt(selectedValue);
+                
+                const response = await fetch(`/api/media/${mediaId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ task_id: taskIdToAssign })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    // Update local array
+                    const mediaIndex = mediaFiles.findIndex(m => m.id === mediaId);
+                    if (mediaIndex !== -1) {
+                        mediaFiles[mediaIndex] = data.media;
+                    }
+                    successCount++;
+                } else {
+                    throw new Error(`Failed to update media ${mediaId}: ${data.error}`);
+                }
+            }
+
+            return { selectedValue, successCount };
+        } catch (error) {
+            Swal.showValidationMessage(error.message);
+            return false;
+        }
+    },
+    allowOutsideClick: () => !Swal.isLoading()
+});
+
+        if (selectedTaskId) {
+            const { selectedValue, successCount } = selectedTaskId;
+            
+            if (successCount > 0) {
+                clearSelection();
+                await loadStats();
+                renderTaskProgress();
+                renderGallery();
+                
+                const taskName = selectedValue === 'unassign' ? null : tasks.find(t => t.id == selectedValue)?.title;
+                const actionText = selectedValue === 'unassign' 
+                    ? 'unassigned from all tasks' 
+                    : `assigned to task: "${taskName}"`;
+                    
+                showSuccess(`${successCount} media files ${actionText} successfully!`);
+            }
+        }
+    }
+
+
+      async function bulkDelete() {
+        if (selectedMedia.size === 0) {
+            showError('Please select media files first');
+            return;
+        }
+
+        const result = await Swal.fire({
+            title: 'Delete Selected Media?',
+            text: `This will permanently delete ${selectedMedia.size} media files. This action cannot be undone!`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            confirmButtonText: `Yes, delete ${selectedMedia.size} files!`,
+            cancelButtonText: 'Cancel',
+            showLoaderOnConfirm: true,
+            preConfirm: async () => {
+                try {
+                    const selectedArray = Array.from(selectedMedia);
+                    let successCount = 0;
+                    let errorCount = 0;
+
+                    // Delete each media file via API
+                    for (const mediaId of selectedArray) {
+                        try {
+                            const response = await fetch(`/api/media/${mediaId}`, {
+                                method: 'DELETE'
+                            });
+                            
+                            const data = await response.json();
+                            if (data.success) {
+                                // Remove from local array
+                                mediaFiles = mediaFiles.filter(media => media.id !== mediaId);
+                                successCount++;
+                            } else {
+                                throw new Error(data.error || 'Delete failed');
+                            }
+                        } catch (error) {
+                            console.error(`Failed to delete media ${mediaId}:`, error);
+                            errorCount++;
+                        }
+                    }
+
+                    return { successCount, errorCount };
+                } catch (error) {
+                    Swal.showValidationMessage(error.message);
+                    return false;
+                }
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        });
+
+        if (result.isConfirmed) {
+            const { successCount, errorCount } = result.value;
+            
+            clearSelection();
+            await loadStats();
+            renderTaskProgress();
+            renderGallery();
+            
+            if (errorCount === 0) {
+                showSuccess(`Successfully deleted ${successCount} media files!`);
+            } else {
+                showError(`Deleted ${successCount} files, but ${errorCount} failed to delete.`);
+            }
+        }
+    }
+
+        function toggleProgressView() {
+            const progressList = document.getElementById('taskProgressList');
+            if (!progressList) return;
+            
+            const isExpanded = progressList.style.maxHeight !== '300px';
+            
+            if (isExpanded) {
+                progressList.style.maxHeight = '300px';
+                progressList.style.overflowY = 'auto';
+            } else {
+                progressList.style.maxHeight = 'none';
+                progressList.style.overflowY = 'visible';
+            }
+        }
+
+        // Export functionality
+     async function exportSelectedMedia() {
+        if (selectedMedia.size === 0) {
+            showError('Please select media files to export');
+            return;
+        }
+
+        try {
+            const selectedFiles = mediaFiles.filter(media => selectedMedia.has(media.id));
+            
+            // Create a zip-like structure for export
+            const exportData = {
+                exported_at: new Date().toISOString(),
+                total_files: selectedFiles.length,
+                export_info: "Media files exported from Task Gallery",
+                files: selectedFiles.map(media => {
+                    const associatedTask = tasks.find(t => t.id === media.task_id);
+                    return {
+                        id: media.id,
+                        filename: media.original_filename,
+                        description: media.description || '',
+                        upload_date: media.upload_date,
+                        file_size: media.file_size,
+                        file_size_formatted: formatFileSize(media.file_size),
+                        is_video: media.is_video,
+                        file_type: media.is_video ? 'Video' : 'Image',
+                        task_id: media.task_id,
+                        task_title: associatedTask ? associatedTask.title : 'Unattached',
+                        task_status: associatedTask ? (associatedTask.completed ? 'Completed' : 'In Progress') : 'N/A',
+                        download_url: media.url
+                    };
+                })
+            };
+
+            // Create and download the JSON file
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { 
+                type: 'application/json' 
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `media_export_${new Date().toISOString().split('T')[0]}_${selectedFiles.length}files.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showSuccess(`Successfully exported ${selectedFiles.length} media files with metadata!`);
+            
+            // Optionally clear selection after export
+            clearSelection();
+            
+        } catch (error) {
+            console.error('Export failed:', error);
+            showError('Export failed: ' + error.message);
+        }
+    }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + A to select all visible media
+            if ((e.ctrlKey || e.metaKey) && e.key === 'a' && !e.target.matches('input, textarea, select')) {
+                e.preventDefault();
+                selectAllVisibleMedia();
+            }
+            
+            // Escape to clear selection
+            if (e.key === 'Escape') {
+                clearSelection();
+            }
+            
+            // Delete key to delete selected
+            if (e.key === 'Delete' && selectedMedia.size > 0 && !e.target.matches('input, textarea, select')) {
+                e.preventDefault();
+                bulkDelete();
+            }
+        });
+
+        function selectAllVisibleMedia() {
+            const visibleCheckboxes = document.querySelectorAll('.gallery-grid .media-checkbox');
+            visibleCheckboxes.forEach(checkbox => {
+                const mediaId = parseInt(checkbox.closest('.media-card').dataset.id);
+                selectedMedia.add(mediaId);
+                checkbox.checked = true;
+            });
+            
+            updateBulkActionsVisibility();
+            updateSelectedCount();
+        }
+
+        // Auto-refresh functionality
+        let autoRefreshInterval;
+        
+        function startAutoRefresh() {
+            autoRefreshInterval = setInterval(async () => {
+                try {
+                    await loadStats();
+                    renderTaskProgress();
+                    
+                    // Only refresh gallery if no files are selected to avoid disrupting user interaction
+                    if (selectedMedia.size === 0) {
+                        const currentMediaCount = mediaFiles.length;
+                        await loadMediaFiles();
+                        
+                        // Only re-render if media count changed
+                        if (mediaFiles.length !== currentMediaCount) {
+                            renderGallery();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Auto-refresh failed:', error);
+                }
+            }, 30000); // Refresh every 30 seconds
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+
+        // Stop auto-refresh when page is hidden
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                stopAutoRefresh();
+            } else {
+                startAutoRefresh();
+            }
+        });
+
+
+        //Added Scripts
+            // Add storage management functions
+        function getStorageInfo() {
+            const totalStorage = JSON.stringify(localStorage).length;
+            const mediaStorage = (localStorage.getItem('taskflow_media') || '').length;
+            const maxStorage = 100 * 1024 * 1024; // Increase to 25MB
+            
+            return {
+                total: totalStorage,
+                media: mediaStorage,
+                max: maxStorage,
+                available: maxStorage - totalStorage,
+                percentage: Math.round((totalStorage / maxStorage) * 100)
+            };
+        }
+
+    function showStorageInfo() {
+        const storage = getStorageInfo();
+        const mediaCount = mediaFiles.length;
+        
+        Swal.fire({
+            title: 'Storage Information',
+            html: `
+                <div style="text-align: left; padding: 1rem;">
+                    <p><strong>Storage Usage:</strong> ${(storage.total / 1024 / 1024).toFixed(2)} MB / ${(storage.max / 1024 / 1024).toFixed(2)} MB (${storage.percentage}%)</p>
+                    <p><strong>Media Files:</strong> ${mediaCount} files using ${(storage.media / 1024 / 1024).toFixed(2)} MB</p>
+                    <p><strong>Available:</strong> ${(storage.available / 1024 / 1024).toFixed(2)} MB</p>
+                    
+                    <div style="background: #f0f0f0; border-radius: 10px; padding: 0.5rem; margin: 1rem 0;">
+                        <div style="background: linear-gradient(90deg, #667eea, #764ba2); height: 10px; border-radius: 5px; width: ${storage.percentage}%;"></div>
+                    </div>
+                    
+                    ${storage.percentage > 80 ? '<p style="color: #ef4444;"><strong>Warning:</strong> Storage is nearly full. Consider deleting some media files.</p>' : ''}
+                </div>
+            `,
+            confirmButtonText: 'Close',
+            showCancelButton: storage.percentage > 50,
+            cancelButtonText: 'Clean Up Storage'
+        }).then((result) => {
+            if (result.dismiss === Swal.DismissReason.cancel) {
+                showStorageCleanup();
+            }
+        });
+    }
+
+    function showStorageCleanup() {
+        const largeFiles = mediaFiles
+            .map(media => ({...media, sizeInMB: (media.url.length / 1024 / 1024).toFixed(2)}))
+            .sort((a, b) => b.url.length - a.url.length)
+            .slice(0, 10);
+        
+        if (largeFiles.length === 0) {
+            showSuccess('No large files found to clean up!');
+            return;
+        }
+        
+        const filesList = largeFiles.map(file => 
+            `<div style="display: flex; justify-content: space-between; padding: 0.5rem; border-bottom: 1px solid #eee;">
+                <span>${file.original_filename}</span>
+                <span>${file.sizeInMB} MB</span>
+            </div>`
+        ).join('');
+        
+        Swal.fire({
+            title: 'Largest Media Files',
+            html: `
+                <div style="text-align: left;">
+                    <p>Consider deleting these large files to free up space:</p>
+                    <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
+                        ${filesList}
+                    </div>
+                </div>
+            `,
+            confirmButtonText: 'Go to Gallery',
+            showCancelButton: true,
+            cancelButtonText: 'Close'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '/gallery';
+            }
+        });
+    }
+
+        function updateTaskMediaCount(taskId) {
+            try {
+                const storedTasks = JSON.parse(localStorage.getItem('taskflow_tasks') || '[]');
+                const mediaFiles = JSON.parse(localStorage.getItem('taskflow_media') || '[]');
+                
+                const taskIndex = storedTasks.findIndex(t => t.id === taskId);
+                if (taskIndex !== -1) {
+                    const currentMediaCount = mediaFiles.filter(m => m.task_id === taskId).length;
+                    storedTasks[taskIndex].media_count = currentMediaCount;
+                    localStorage.setItem('taskflow_tasks', JSON.stringify(storedTasks));
+                    
+                    // Update the global tasks array
+                    tasks = storedTasks;
+                    
+                    console.log(`Updated task ${taskId} media count to ${currentMediaCount}`);
+                }
+            } catch (error) {
+                console.error('Error updating task media count:', error);
+            }
+        }
+
+        function synchronizeAllTaskMediaCounts() {
+            try {
+                const storedTasks = JSON.parse(localStorage.getItem('taskflow_tasks') || '[]');
+                const mediaFiles = JSON.parse(localStorage.getItem('taskflow_media') || '[]');
+                
+                let updated = false;
+                storedTasks.forEach(task => {
+                    const actualMediaCount = mediaFiles.filter(media => media.task_id === task.id).length;
+                    if (task.media_count !== actualMediaCount) {
+                        task.media_count = actualMediaCount;
+                        updated = true;
+                    }
+                });
+                
+                if (updated) {
+                    localStorage.setItem('taskflow_tasks', JSON.stringify(storedTasks));
+                    tasks = storedTasks; // Update the global tasks array
+                    console.log('All task media counts synchronized');
+                }
+            } catch (error) {
+                console.error('Error synchronizing task media counts:', error);
+            }
+        }
+        function checkTaskSpecificFilter() {
+            const filterTaskId = sessionStorage.getItem('gallery_filter_task_id');
+            const filterType = sessionStorage.getItem('gallery_filter_type');
+            
+            if (filterType === 'task-specific' && filterTaskId) {
+                // Clear the session storage
+                sessionStorage.removeItem('gallery_filter_task_id');
+                sessionStorage.removeItem('gallery_filter_type');
+                
+                // Apply the task-specific filter
+                currentFilter = 'task-specific';
+                const taskId = parseInt(filterTaskId);
+                
+                // Update the filter buttons UI
+                document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Add a dynamic filter button for this specific task
+                const task = tasks.find(t => t.id === taskId);
+                if (task) {
+                    const filterSection = document.querySelector('.filter-section');
+                    
+                    // Remove any existing task-specific button
+                    const existingTaskBtn = filterSection.querySelector('.filter-btn[data-filter="task-specific"]');
+                    if (existingTaskBtn) {
+                        existingTaskBtn.remove();
+                    }
+                    
+                    // Add new task-specific button
+                    const taskBtn = document.createElement('button');
+                    taskBtn.className = 'filter-btn active';
+                    taskBtn.setAttribute('data-filter', 'task-specific');
+                    taskBtn.innerHTML = `<i class="fas fa-tasks"></i> ${task.title}`;
+                    filterSection.appendChild(taskBtn);
+                    
+                    // Add click handler
+                    taskBtn.addEventListener('click', function() {
+                        document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        currentFilter = 'task-specific';
+                        renderGallery();
+                    });
+                }
+                
+                // Render gallery with task-specific filter
+                renderGallery();
+                
+                // Show success message
+                if (task) {
+                    showSuccess(`Showing media files for task: "${task.title}"`);
+                }
+            }
+        }
+
+        function checkURLParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const taskId = urlParams.get('task_id');
+            const filter = urlParams.get('filter');
+            
+            if (taskId && filter === 'task') {
+                // Set up task-specific filter
+                sessionStorage.setItem('gallery_filter_task_id', taskId);
+                sessionStorage.setItem('gallery_filter_type', 'task-specific');
+                
+                // Clean URL without reload
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+            }
+        }
+
+        function goToDashboard() {
+            // Clear any temp session data
+            sessionStorage.removeItem('gallery_filter_task_id');
+            sessionStorage.removeItem('gallery_filter_type');
+            window.location.href = '/dashboard';
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // Clear all session and local storage
+                sessionStorage.clear();
+                localStorage.clear();
+                window.location.href = '/logout';
+            }
+        }
+
+        // Search functionality
+            let searchTimeout;
+            function handleSearch(searchTerm) {
+                clearTimeout(searchTimeout);
+                const clearBtn = document.getElementById('clearSearch');
+                
+                if (searchTerm.length > 0) {
+                    clearBtn.classList.add('active');
+                } else {
+                    clearBtn.classList.remove('active');
+                }
+                
+                searchTimeout = setTimeout(() => {
+                    currentSearch = searchTerm.toLowerCase();
+                    renderGallery();
+                    updateSearchResults();
+                }, 300);
+            }
+
+            function clearSearch() {
+                document.getElementById('searchInput').value = '';
+                document.getElementById('clearSearch').classList.remove('active');
+                currentSearch = '';
+                renderGallery();
+                updateSearchResults();
+            }
+
+            function updateSearchResults() {
+                const resultsInfo = document.getElementById('searchResultsInfo');
+                const resultsCount = document.getElementById('searchResultsCount');
+                const resultsFilter = document.getElementById('searchResultsFilter');
+                
+                if (currentSearch || currentFilter !== 'all') {
+                    let filteredMedia = [...mediaFiles];
+                    
+                    // Apply search filter
+                    if (currentSearch) {
+                        filteredMedia = filteredMedia.filter(media => 
+                            media.original_filename.toLowerCase().includes(currentSearch) ||
+                            (media.description && media.description.toLowerCase().includes(currentSearch)) ||
+                            (media.task_id && tasks.find(t => t.id === media.task_id)?.title.toLowerCase().includes(currentSearch))
+                        );
+                    }
+                    
+                    // Apply category filter (simplified version of renderGallery logic)
+                    switch(currentFilter) {
+                        case 'images':
+                            filteredMedia = filteredMedia.filter(media => !media.is_video);
+                            break;
+                        case 'videos':
+                            filteredMedia = filteredMedia.filter(media => media.is_video);
+                            break;
+                        case 'task-attached':
+                            filteredMedia = filteredMedia.filter(media => media.task_id !== null);
+                            break;
+                        case 'unattached':
+                            filteredMedia = filteredMedia.filter(media => media.task_id === null);
+                            break;
+                        case 'completed-tasks':
+                            const completedTaskIds = tasks.filter(t => t.completed).map(t => t.id);
+                            filteredMedia = filteredMedia.filter(media => completedTaskIds.includes(media.task_id));
+                            break;
+                        case 'recent':
+                            const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+                            filteredMedia = filteredMedia.filter(media => new Date(media.upload_date) > sevenDaysAgo);
+                            break;
+                        case 'large-files':
+                            filteredMedia = filteredMedia.filter(media => media.file_size > 5 * 1024 * 1024); // > 5MB
+                            break;
+                        case 'advanced':
+                            if (window.advancedFilters) {
+                                const filters = window.advancedFilters;
+                                
+                                // Size filter
+                                if (filters.minSize) {
+                                    const minBytes = parseFloat(filters.minSize) * 1024 * 1024;
+                                    filteredMedia = filteredMedia.filter(media => media.file_size >= minBytes);
+                                }
+                                if (filters.maxSize) {
+                                    const maxBytes = parseFloat(filters.maxSize) * 1024 * 1024;
+                                    filteredMedia = filteredMedia.filter(media => media.file_size <= maxBytes);
+                                }
+                                
+                                // Date filter
+                                if (filters.startDate) {
+                                    const startDate = new Date(filters.startDate);
+                                    filteredMedia = filteredMedia.filter(media => new Date(media.upload_date) >= startDate);
+                                }
+                                if (filters.endDate) {
+                                    const endDate = new Date(filters.endDate);
+                                    endDate.setHours(23, 59, 59, 999); // End of day
+                                    filteredMedia = filteredMedia.filter(media => new Date(media.upload_date) <= endDate);
+                                }
+                                
+                                // Task filter
+                                if (filters.taskFilter) {
+                                    const taskId = parseInt(filters.taskFilter);
+                                    filteredMedia = filteredMedia.filter(media => media.task_id === taskId);
+                                }
+                                
+                                // File type filter
+                                if (!filters.includeImages) {
+                                    filteredMedia = filteredMedia.filter(media => media.is_video);
+                                }
+                                if (!filters.includeVideos) {
+                                    filteredMedia = filteredMedia.filter(media => !media.is_video);
+                                }
+                            }
+                            break;
+                    }
+                    
+                    resultsCount.textContent = `Found ${filteredMedia.length} of ${mediaFiles.length} files`;
+                    
+                    const filterText = currentFilter !== 'all' ? ` • Filter: ${getFilterDisplayName(currentFilter)}` : '';
+                    const searchText = currentSearch ? ` • Search: "${currentSearch}"` : '';
+                    resultsFilter.textContent = filterText + searchText;
+                    
+                    resultsInfo.style.display = 'flex';
+                } else {
+                    resultsInfo.style.display = 'none';
+                }
+            }
+
+            function getFilterDisplayName(filter) {
+                const filterNames = {
+                    'images': 'Images Only',
+                    'videos': 'Videos Only',
+                    'task-attached': 'Task Attached',
+                    'unattached': 'Unattached',
+                    'completed-tasks': 'Completed Tasks',
+                    'recent': 'Recent (7 days)',
+                    'large-files': 'Large Files',
+                    'task-specific': 'Task Specific'
+                };
+                return filterNames[filter] || filter;
+            }
+
+            // Sort functionality
+            function handleSortChange(sortType) {
+                currentSort = sortType;
+                renderGallery();
+            }
+
+            // View toggle functionality
+            let currentView = 'grid';
+            function toggleView(viewType) {
+                currentView = viewType;
+                
+                document.getElementById('gridView').classList.remove('active');
+                document.getElementById('listView').classList.remove('active');
+                document.getElementById(viewType + 'View').classList.add('active');
+                
+                const galleryGrid = document.querySelector('.gallery-grid');
+                if (galleryGrid) {
+                    if (viewType === 'list') {
+                        galleryGrid.style.gridTemplateColumns = '1fr';
+                        galleryGrid.style.gap = '1rem';
+                    } else {
+                        galleryGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
+                        galleryGrid.style.gap = '2rem';
+                    }
+                }
+            }
+
+            // Advanced filters modal
+            function showAdvancedFilters() {
+                const taskOptions = tasks.map(task => 
+                    `<option value="${task.id}">${task.completed ? '✅' : '📋'} ${task.title}</option>`
+                ).join('');
+                
+                Swal.fire({
+                    title: 'Advanced Filters',
+                    html: `
+                        <div style="text-align: left; max-width: 500px;">
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">File Size Range:</label>
+                                <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.5rem; align-items: center;">
+                                    <input type="number" id="minSize" placeholder="Min MB" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                                    <span>to</span>
+                                    <input type="number" id="maxSize" placeholder="Max MB" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Upload Date Range:</label>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                    <input type="date" id="startDate" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                                    <input type="date" id="endDate" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Specific Task:</label>
+                                <select id="taskFilter" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                                    <option value="">All Tasks</option>
+                                    ${taskOptions}
+                                </select>
+                            </div>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">File Type:</label>
+                                <div style="display: flex; gap: 1rem;">
+                                    <label><input type="checkbox" id="includeImages" checked> Images</label>
+                                    <label><input type="checkbox" id="includeVideos" checked> Videos</label>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Apply Filters',
+                    cancelButtonText: 'Reset All',
+                    width: '600px',
+                    preConfirm: () => {
+                        return {
+                            minSize: document.getElementById('minSize').value,
+                            maxSize: document.getElementById('maxSize').value,
+                            startDate: document.getElementById('startDate').value,
+                            endDate: document.getElementById('endDate').value,
+                            taskFilter: document.getElementById('taskFilter').value,
+                            includeImages: document.getElementById('includeImages').checked,
+                            includeVideos: document.getElementById('includeVideos').checked
+                        };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        applyAdvancedFilters(result.value);
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        resetAllFilters();
+                    }
+                });
+            }
+
+            function applyAdvancedFilters(filters) {
+                // Store advanced filters globally
+                window.advancedFilters = filters;
+                currentFilter = 'advanced';
+                
+                // Update UI
+                document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => btn.classList.remove('active'));
+                
+                renderGallery();
+                
+                // Show success message with filter summary
+                const activeFilters = [];
+                if (filters.minSize || filters.maxSize) activeFilters.push('Size range');
+                if (filters.startDate || filters.endDate) activeFilters.push('Date range');
+                if (filters.taskFilter) activeFilters.push('Specific task');
+                if (!filters.includeImages || !filters.includeVideos) activeFilters.push('File type');
+                
+                showSuccess(`Advanced filters applied: ${activeFilters.join(', ')}`);
+            }
+
+            function resetAllFilters() {
+                // Clear all filters
+                currentFilter = 'all';
+                currentSearch = '';
+                currentSort = 'newest';
+                window.advancedFilters = null;
+                
+                // Reset UI
+                document.getElementById('searchInput').value = '';
+                document.getElementById('clearSearch').classList.remove('active');
+                document.getElementById('sortSelect').value = 'newest';
+                
+                document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => btn.classList.remove('active'));
+                document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
+                
+                renderGallery();
+                showSuccess('All filters reset');
+            }
+    </script>
+
+
+    
+</body>
+</html>
