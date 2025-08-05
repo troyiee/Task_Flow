@@ -10,3 +10,4 @@ gunicorn==21.2.0
 python-dotenv==1.0.0
 sib_api_v3_sdk==7.6.0
 requests==2.31.0
+schedule==1.2.0
