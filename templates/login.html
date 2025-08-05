@@ -1226,6 +1226,57 @@
     .swal-warning-title {
         color: #f59e0b !important;
     }
+    /* Fix SweetAlert positioning - add this to your existing CSS */
+.swal2-container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 1060 !important;
+}
+
+.swal2-popup {
+    position: relative !important;
+    transform: none !important;
+    margin: auto !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+}
+
+/* Ensure proper centering on mobile */
+@media (max-width: 768px) {
+    .swal2-container {
+        padding: 1rem !important;
+    }
+    
+    .swal2-popup {
+        width: calc(100% - 2rem) !important;
+        max-width: 400px !important;
+        margin: auto !important;
+    }
+}
+
+/* Additional mobile fixes */
+@media (max-width: 480px) {
+    .swal2-popup {
+        width: calc(100% - 1rem) !important;
+        max-width: 350px !important;
+    }
+    
+    .swal2-title {
+        font-size: 1.25rem !important;
+    }
+    
+    .swal2-content {
+        font-size: 0.9rem !important;
+    }
+}
 
     /* Improved Mobile Responsive Design */
     @media (max-width: 1200px) {
