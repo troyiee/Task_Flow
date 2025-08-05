@@ -357,7 +357,6 @@
                 })
                 .then(response => {
                     console.log('Response status:', response.status);
-                    console.log('Response headers:', response.headers);
                     return response.text();
                 })
                 .then(html => {
@@ -373,8 +372,8 @@
                     btnText.style.display = 'block';
                     btnLoader.style.display = 'none';
                     
-                    // Handle different response types
-                    if (html.includes('data-login-success') || html.includes('dashboard') || html.includes('Welcome')) {
+                    // Handle different response types with SweetAlert
+                    if (html.includes('data-login-success')) {
                         Swal.fire({
                             icon: 'success',
                             title: 'Welcome back! 🎉',
@@ -393,7 +392,8 @@
                             showConfirmButton: false,
                             timer: 3000
                         });
-                    } else if (html.includes('Invalid username or password') || html.includes('login failed') || html.includes('authentication failed')) {
+                    } else {
+                        // Show login failed message for any other case
                         Swal.fire({
                             icon: 'error',
                             title: 'Login Failed',
@@ -401,27 +401,6 @@
                             showConfirmButton: false,
                             timer: 3000
                         });
-                    } else {
-                        // If no specific markers found, check if we're redirected to login page
-                        if (html.includes('Welcome Back') || html.includes('Sign in to your account')) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Login Failed',
-                                text: 'Invalid credentials. Please check your username and password.',
-                                showConfirmButton: false,
-                                timer: 3000
-                            });
-                        } else {
-                            // Unknown response - show generic error but log details
-                            console.error('Unexpected response:', html.substring(0, 500));
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Unexpected Response',
-                                text: 'Something unexpected happened. Please try again.',
-                                showConfirmButton: false,
-                                timer: 3000
-                            });
-                        }
                     }
                 })
                 .catch(error => {
